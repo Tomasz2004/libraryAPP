@@ -10,20 +10,13 @@ import java.util.List;
 
 @Repository
 public interface EgzemplarzRepository extends JpaRepository<Egzemplarz, Integer> {
-    
-    // Filtr według statusu (dostepny/wypozyczony/zablokowany)
-    List<Egzemplarz> findByStatus(String status);
-    
-    // Wszystkie egzemplarze danej książki
-    List<Egzemplarz> findByKsiazkaKsiazkaId(Integer ksiazkaId);
-    
-    // Wszystkie egzemplarze w danej bibliotece
-    List<Egzemplarz> findByBibliotekaBibliotekaId(Integer bibliotekaId);
-    
-    // Zaawansowane filtrowanie
-    @Query("SELECT e FROM Egzemplarz e WHERE " +
-           "(:status IS NULL OR e.status = :status) AND " +
-           "(:bibliotekaId IS NULL OR e.biblioteka.bibliotekaId = :bibliotekaId)")
-    List<Egzemplarz> searchEgzemplarze(@Param("status") String status,
-                                       @Param("bibliotekaId") Integer bibliotekaId);
+
+       // Zaawansowane filtrowanie
+       @Query("SELECT e FROM Egzemplarz e WHERE " +
+                     "(:status IS NULL OR e.status = :status) AND " +
+                     "(:bibliotekaId IS NULL OR e.biblioteka.bibliotekaId = :bibliotekaId) AND " +
+                     "(:ksiazkaId IS NULL OR e.ksiazka.ksiazkaId = :ksiazkaId)")
+       List<Egzemplarz> searchEgzemplarze(@Param("status") String status,
+                     @Param("bibliotekaId") Integer bibliotekaId,
+                     @Param("ksiazkaId") Integer ksiazkaId);
 }

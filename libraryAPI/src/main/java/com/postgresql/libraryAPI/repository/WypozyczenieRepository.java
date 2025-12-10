@@ -11,23 +11,27 @@ import java.util.List;
 
 @Repository
 public interface WypozyczenieRepository extends JpaRepository<Wypozyczenie, Integer> {
-    
-    // Wypożyczenia danego czytelnika
-    List<Wypozyczenie> findByCzytelnikCzytelnikId(Integer czytelnikId);
-    
-    // Aktywne wypożyczenia (nie zwrócone)
-    List<Wypozyczenie> findByDataZwrotuIsNull();
-    
-    // Wypożyczenia zwrócone
-    List<Wypozyczenie> findByDataZwrotuIsNotNull();
-    
-    // Zaawansowane filtrowanie po zakresie dat i użytkowniku
-    @Query("SELECT w FROM Wypozyczenie w WHERE " +
-           "(:dataOd IS NULL OR w.dataWypozyczenia >= :dataOd) AND " +
-           "(:dataDo IS NULL OR w.dataWypozyczenia <= :dataDo) AND " +
-           "(:czytelnikId IS NULL OR w.czytelnik.czytelnikId = :czytelnikId) " +
-           "ORDER BY w.dataWypozyczenia DESC")
-    List<Wypozyczenie> searchWypozyczenia(@Param("dataOd") LocalDate dataOd,
-                                          @Param("dataDo") LocalDate dataDo,
-                                          @Param("czytelnikId") Integer czytelnikId);
+
+       // Wypożyczenia danego czytelnika
+       List<Wypozyczenie> findByCzytelnikCzytelnikId(Integer czytelnikId);
+
+       // Aktywne wypożyczenia (nie zwrócone)
+       List<Wypozyczenie> findByDataZwrotuIsNull();
+
+       // Wypożyczenia zwrócone
+       List<Wypozyczenie> findByDataZwrotuIsNotNull();
+
+       // Zaawansowane filtrowanie po zakresie dat, użytkowniku i statusie
+       @Query("SELECT w FROM Wypozyczenie w WHERE " +
+                     "(:dataOd IS NULL OR w.dataWypozyczenia >= :dataOd) AND " +
+                     "(:dataDo IS NULL OR w.dataWypozyczenia <= :dataDo) AND " +
+                     "(:czytelnikId IS NULL OR w.czytelnik.czytelnikId = :czytelnikId) AND " +
+                     "(:status IS NULL OR " +
+                     "  (:status = 'aktywne' AND w.dataZwrotu IS NULL) OR " +
+                     "  (:status = 'zwrocone' AND w.dataZwrotu IS NOT NULL)) " +
+                     "ORDER BY w.dataWypozyczenia DESC")
+       List<Wypozyczenie> searchWypozyczenia(@Param("dataOd") LocalDate dataOd,
+                     @Param("dataDo") LocalDate dataDo,
+                     @Param("czytelnikId") Integer czytelnikId,
+                     @Param("status") String status);
 }
