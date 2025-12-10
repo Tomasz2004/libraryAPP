@@ -72,13 +72,19 @@ public class EgzemplarzController {
             return ResponseEntity.badRequest().body("Biblioteka o ID " + dto.getBibliotekaId() + " nie istnieje");
         }
 
+        // Walidacja statusu
+        String status = dto.getStatus() != null ? dto.getStatus() : "dostepny";
+        if (!status.equals("dostepny") && !status.equals("wypozyczony") && !status.equals("zablokowany")) {
+            return ResponseEntity.badRequest().body("Status musi być: dostepny, wypozyczony lub zablokowany");
+        }
+
         // Utwórz egzemplarz
         Egzemplarz egzemplarz = new Egzemplarz();
         egzemplarz.setKsiazka(ksiazka);
         egzemplarz.setBiblioteka(biblioteka);
         egzemplarz.setSygnatura(dto.getSygnatura());
         egzemplarz.setBarcode(dto.getBarcode());
-        egzemplarz.setStatus(dto.getStatus() != null ? dto.getStatus() : "dostepny");
+        egzemplarz.setStatus(status);
         egzemplarz.setDataDodania(LocalDate.now());
 
         Egzemplarz savedEgzemplarz = egzemplarzRepository.save(egzemplarz);
@@ -90,6 +96,12 @@ public class EgzemplarzController {
     public ResponseEntity<?> updateEgzemplarz(@PathVariable Integer id, @RequestBody EgzemplarzCreateDTO dto) {
         return egzemplarzRepository.findById(id)
                 .map(existing -> {
+                    // Walidacja wymaganych pól
+                    if (dto.getKsiazkaId() == null || dto.getBibliotekaId() == null || dto.getStatus() == null) {
+                        return ResponseEntity.badRequest()
+                                .body("Pola ksiazkaId, bibliotekaId i status są wymagane");
+                    }
+
                     // Sprawdź czy książka istnieje
                     Ksiazka ksiazka = ksiazkaRepository.findById(dto.getKsiazkaId())
                             .orElse(null);
@@ -105,14 +117,19 @@ public class EgzemplarzController {
                                 .body("Biblioteka o ID " + dto.getBibliotekaId() + " nie istnieje");
                     }
 
+                    // Walidacja statusu
+                    if (!dto.getStatus().equals("dostepny") && !dto.getStatus().equals("wypozyczony")
+                            && !dto.getStatus().equals("zablokowany")) {
+                        return ResponseEntity.badRequest()
+                                .body("Status musi być: dostepny, wypozyczony lub zablokowany");
+                    }
+
                     // Aktualizuj egzemplarz
                     existing.setKsiazka(ksiazka);
                     existing.setBiblioteka(biblioteka);
                     existing.setSygnatura(dto.getSygnatura());
                     existing.setBarcode(dto.getBarcode());
-                    if (dto.getStatus() != null) {
-                        existing.setStatus(dto.getStatus());
-                    }
+                    existing.setStatus(dto.getStatus());
 
                     Egzemplarz updated = egzemplarzRepository.save(existing);
                     return ResponseEntity.ok().body(updated);
