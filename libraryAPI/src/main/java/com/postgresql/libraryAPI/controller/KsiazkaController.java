@@ -1,6 +1,9 @@
 package com.postgresql.libraryAPI.controller;
 
+import com.postgresql.libraryAPI.dto.KsiazkaCreateDTO;
+import com.postgresql.libraryAPI.model.Autor;
 import com.postgresql.libraryAPI.model.Ksiazka;
+import com.postgresql.libraryAPI.repository.AutorRepository;
 import com.postgresql.libraryAPI.repository.KsiazkaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +18,9 @@ public class KsiazkaController {
 
     @Autowired
     private KsiazkaRepository ksiazkaRepository;
+
+    @Autowired
+    private AutorRepository autorRepository;
 
     /**
      * FORMULARZ: Wyszukiwanie książek według autora, tytułu, gatunku lub roku
@@ -47,5 +53,48 @@ public class KsiazkaController {
         return ksiazkaRepository.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping
+    public ResponseEntity<?> createKsiazka(@RequestBody KsiazkaCreateDTO dto) {
+        Autor autor = autorRepository.findById(dto.getAutorId()).orElse(null);
+        if (autor == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        Ksiazka newKsiazka = new Ksiazka();
+        newKsiazka.setTytul(dto.getTytul());
+        newKsiazka.setAutor(autor);
+        newKsiazka.setGatunek(dto.getGatunek());
+        newKsiazka.setRokWydania(dto.getRokWydania());
+        newKsiazka.setIsbn(dto.getIsbn());
+        newKsiazka.setOpis(dto.getOpis());
+        Ksiazka savedKsiazka = ksiazkaRepository.save(newKsiazka);
+        return ResponseEntity.ok(savedKsiazka);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateKsiazka(@PathVariable Integer id, @RequestBody KsiazkaCreateDTO dto) {
+        return ksiazkaRepository.findById(id).map(existingKsiazka -> {
+            Autor autor = autorRepository.findById(dto.getAutorId()).orElse(null);
+            if (autor == null) {
+                return ResponseEntity.badRequest().build();
+            }
+            existingKsiazka.setTytul(dto.getTytul());
+            existingKsiazka.setAutor(autor);
+            existingKsiazka.setGatunek(dto.getGatunek());
+            existingKsiazka.setRokWydania(dto.getRokWydania());
+            existingKsiazka.setIsbn(dto.getIsbn());
+            existingKsiazka.setOpis(dto.getOpis());
+            Ksiazka updatedKsiazka = ksiazkaRepository.save(existingKsiazka);
+            return ResponseEntity.ok(updatedKsiazka);
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteKsiazka(@PathVariable Integer id) {
+        return ksiazkaRepository.findById(id).map(ksiazka -> {
+            ksiazkaRepository.delete(ksiazka);
+            return ResponseEntity.ok().build();
+        }).orElse(ResponseEntity.notFound().build());
     }
 }

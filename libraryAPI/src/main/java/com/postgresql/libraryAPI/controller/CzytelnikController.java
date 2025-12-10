@@ -1,5 +1,6 @@
 package com.postgresql.libraryAPI.controller;
 
+import com.postgresql.libraryAPI.dto.CzytelnikCreateDTO;
 import com.postgresql.libraryAPI.model.Czytelnik;
 import com.postgresql.libraryAPI.repository.CzytelnikRepository;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -37,5 +38,38 @@ public class CzytelnikController {
         return czytelnikRepository.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping
+    public ResponseEntity<Czytelnik> createCzytelnik(@RequestBody CzytelnikCreateDTO dto) {
+        Czytelnik newCzytelnik = new Czytelnik();
+        newCzytelnik.setImie(dto.getImie());
+        newCzytelnik.setNazwisko(dto.getNazwisko());
+        newCzytelnik.setEmail(dto.getEmail());
+        newCzytelnik.setTelefon(dto.getTelefon());
+        newCzytelnik.setDataRejestracji(dto.getDataRejestracji());
+        Czytelnik savedCzytelnik = czytelnikRepository.save(newCzytelnik);
+        return ResponseEntity.ok(savedCzytelnik);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Czytelnik> updateCzytelnik(@PathVariable Integer id,
+            @RequestBody Czytelnik czytelnikDetails) {
+        return czytelnikRepository.findById(id).map(existingCzytelnik -> {
+            existingCzytelnik.setImie(czytelnikDetails.getImie());
+            existingCzytelnik.setNazwisko(czytelnikDetails.getNazwisko());
+            existingCzytelnik.setEmail(czytelnikDetails.getEmail());
+            existingCzytelnik.setTelefon(czytelnikDetails.getTelefon());
+            Czytelnik updatedCzytelnik = czytelnikRepository.save(existingCzytelnik);
+            return ResponseEntity.ok(updatedCzytelnik);
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteCzytelnik(@PathVariable Integer id) {
+        return czytelnikRepository.findById(id).map(czytelnik -> {
+            czytelnikRepository.delete(czytelnik);
+            return ResponseEntity.ok().build();
+        }).orElse(ResponseEntity.notFound().build());
     }
 }
