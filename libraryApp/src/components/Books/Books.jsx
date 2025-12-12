@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import './App.css';
+import './Books.css';
 
-function App() {
+function Books() {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -65,4 +65,4 @@ function App() {
   );
 }
 
-export default App;
+export default Books;
