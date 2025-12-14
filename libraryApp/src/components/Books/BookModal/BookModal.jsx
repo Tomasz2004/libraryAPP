@@ -1,35 +1,22 @@
+import { useBookForm } from '../../../hooks/useBookForm';
 import AuthorForm from '../AuthorForm/AuthorForm';
 import './BookModal.css';
 
 /**
  * Modal do dodawania/edycji książki
- * Komponent kontrolowany przez rodzica - otrzymuje wszystkie dane i handlery przez props
+ * Używa Context API - pobiera stan z BookFormContext
  *
  * @param {boolean} isOpen - czy modal jest otwarty
  * @param {function} onClose - funkcja zamykająca modal
- * @param {object} bookData - dane książki
- * @param {function} onBookChange - funkcja do zmiany danych książki
  * @param {function} onSubmit - funkcja do zapisania książki
  * @param {array} authors - lista autorów
- * @param {boolean} showAuthorForm - czy pokazać formularz dodawania autora
- * @param {function} onToggleAuthorForm - funkcja do pokazania/ukrycia formularza autora
- * @param {object} authorData - dane nowego autora
- * @param {function} onAuthorChange - funkcja do zmiany danych autora
  * @param {function} onAuthorSubmit - funkcja do zapisania autora
  */
-function BookModal({
-  isOpen,
-  onClose,
-  bookData,
-  onBookChange,
-  onSubmit,
-  authors,
-  showAuthorForm,
-  onToggleAuthorForm,
-  authorData,
-  onAuthorChange,
-  onAuthorSubmit,
-}) {
+function BookModal({ isOpen, onClose, onSubmit, authors, onAuthorSubmit }) {
+  // Pobierz stan i funkcje z contextu
+  const { bookData, setBookData, showAuthorForm, toggleAuthorForm } =
+    useBookForm();
+
   if (!isOpen) return null;
 
   return (
@@ -44,7 +31,7 @@ function BookModal({
               required
               value={bookData.tytul}
               onChange={(e) =>
-                onBookChange({ ...bookData, tytul: e.target.value })
+                setBookData({ ...bookData, tytul: e.target.value })
               }
             />
           </div>
@@ -56,9 +43,9 @@ function BookModal({
               value={bookData.autorId}
               onChange={(e) => {
                 if (e.target.value === 'new') {
-                  onToggleAuthorForm(true);
+                  toggleAuthorForm(true);
                 } else {
-                  onBookChange({ ...bookData, autorId: e.target.value });
+                  setBookData({ ...bookData, autorId: e.target.value });
                 }
               }}
             >
@@ -72,17 +59,7 @@ function BookModal({
             </select>
           </div>
 
-          {showAuthorForm && (
-            <AuthorForm
-              authorData={authorData}
-              onAuthorChange={onAuthorChange}
-              onSubmit={onAuthorSubmit}
-              onCancel={() => {
-                onToggleAuthorForm(false);
-                onBookChange({ ...bookData, autorId: '' });
-              }}
-            />
-          )}
+          {showAuthorForm && <AuthorForm onSubmit={onAuthorSubmit} />}
 
           <div className='form-group'>
             <label>Gatunek</label>
@@ -90,7 +67,7 @@ function BookModal({
               type='text'
               value={bookData.gatunek}
               onChange={(e) =>
-                onBookChange({ ...bookData, gatunek: e.target.value })
+                setBookData({ ...bookData, gatunek: e.target.value })
               }
             />
           </div>
@@ -101,7 +78,7 @@ function BookModal({
               type='number'
               value={bookData.rokWydania}
               onChange={(e) =>
-                onBookChange({ ...bookData, rokWydania: e.target.value })
+                setBookData({ ...bookData, rokWydania: e.target.value })
               }
             />
           </div>
@@ -112,7 +89,7 @@ function BookModal({
               type='text'
               value={bookData.isbn}
               onChange={(e) =>
-                onBookChange({ ...bookData, isbn: e.target.value })
+                setBookData({ ...bookData, isbn: e.target.value })
               }
             />
           </div>
@@ -122,7 +99,7 @@ function BookModal({
             <textarea
               value={bookData.opis}
               onChange={(e) =>
-                onBookChange({ ...bookData, opis: e.target.value })
+                setBookData({ ...bookData, opis: e.target.value })
               }
               rows='3'
             />

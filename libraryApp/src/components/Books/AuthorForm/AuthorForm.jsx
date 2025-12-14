@@ -1,10 +1,16 @@
+import { useBookForm } from '../../../hooks/useBookForm';
 import './AuthorForm.css';
 
 /**
  * Formularz dodawania nowego autora
- * Komponent prezentacyjny - otrzymuje dane i funkcje przez props
+ * Używa Context API - pobiera stan z BookFormContext
+ *
+ * @param {function} onSubmit - funkcja do zapisania autora
  */
-function AuthorForm({ authorData, onAuthorChange, onSubmit, onCancel }) {
+function AuthorForm({ onSubmit }) {
+  // Pobierz stan i funkcje z contextu
+  const { authorData, setAuthorData, toggleAuthorForm } = useBookForm();
+
   return (
     <div className='author-form'>
       <h3>Dodaj nowego autora</h3>
@@ -15,7 +21,7 @@ function AuthorForm({ authorData, onAuthorChange, onSubmit, onCancel }) {
           required
           value={authorData.imie}
           onChange={(e) =>
-            onAuthorChange({ ...authorData, imie: e.target.value })
+            setAuthorData({ ...authorData, imie: e.target.value })
           }
         />
       </div>
@@ -26,7 +32,7 @@ function AuthorForm({ authorData, onAuthorChange, onSubmit, onCancel }) {
           required
           value={authorData.nazwisko}
           onChange={(e) =>
-            onAuthorChange({ ...authorData, nazwisko: e.target.value })
+            setAuthorData({ ...authorData, nazwisko: e.target.value })
           }
         />
       </div>
@@ -36,7 +42,7 @@ function AuthorForm({ authorData, onAuthorChange, onSubmit, onCancel }) {
           type='date'
           value={authorData.dataUrodzenia}
           onChange={(e) =>
-            onAuthorChange({
+            setAuthorData({
               ...authorData,
               dataUrodzenia: e.target.value,
             })
@@ -49,7 +55,7 @@ function AuthorForm({ authorData, onAuthorChange, onSubmit, onCancel }) {
           type='text'
           value={authorData.kraj}
           onChange={(e) =>
-            onAuthorChange({ ...authorData, kraj: e.target.value })
+            setAuthorData({ ...authorData, kraj: e.target.value })
           }
         />
       </div>
@@ -57,7 +63,7 @@ function AuthorForm({ authorData, onAuthorChange, onSubmit, onCancel }) {
         <button
           type='button'
           className='btn btn-secondary btn-sm'
-          onClick={onCancel}
+          onClick={() => toggleAuthorForm(false)}
         >
           Anuluj
         </button>

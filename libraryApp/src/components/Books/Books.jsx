@@ -1,32 +1,23 @@
 import { useState } from 'react';
 import useBooks from '../../hooks/useBooks';
 import useAuthors from '../../hooks/useAuthors';
+import { useBookForm } from '../../hooks/useBookForm';
+import { BookFormProvider } from '../../contexts/BookFormContext';
 import BookModal from './BookModal/BookModal';
 import './Books.css';
 
-function Books() {
-  // Custom hooks - cała logika biznesowa jest w nich
+function BooksContent() {
+  // Custom hooks - cała logika biznesowa
   const { books, loading, error, addBook, deleteBooks } = useBooks();
   const { authors, fetchAuthors, addAuthor } = useAuthors();
+
+  // Context - stan formularza
+  const { bookData, authorData, resetBookForm, resetAuthorForm, selectAuthor } =
+    useBookForm();
 
   // Stan lokalny - tylko dla UI
   const [selectedBooks, setSelectedBooks] = useState([]);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [showAddAuthorForm, setShowAddAuthorForm] = useState(false);
-  const [newBook, setNewBook] = useState({
-    tytul: '',
-    autorId: '',
-    gatunek: '',
-    rokWydania: '',
-    isbn: '',
-    opis: '',
-  });
-  const [newAuthor, setNewAuthor] = useState({
-    imie: '',
-    nazwisko: '',
-    dataUrodzenia: '',
-    kraj: '',
-  });
 
   // Obsługa zaznaczania książek
   const handleSelectBook = (bookId) => {
@@ -68,24 +59,17 @@ function Books() {
   const handleAddBook = async (e) => {
     e.preventDefault();
 
-    const bookData = {
-      ...newBook,
-      rokWydania: parseInt(newBook.rokWydania),
-      autorId: parseInt(newBook.autorId),
+    const bookDataToSend = {
+      ...bookData,
+      rokWydania: parseInt(bookData.rokWydania),
+      autorId: parseInt(bookData.autorId),
     };
 
-    const result = await addBook(bookData);
+    const result = await addBook(bookDataToSend);
 
     if (result.success) {
       setShowAddModal(false);
-      setNewBook({
-        tytul: '',
-        autorId: '',
-        gatunek: '',
-        rokWydania: '',
-        isbn: '',
-        opis: '',
-      });
+      resetBookForm();
     } else {
       alert(`Błąd podczas dodawania książki: ${result.error}`);
     }
@@ -95,17 +79,11 @@ function Books() {
   const handleAddAuthor = async (e) => {
     e.preventDefault();
 
-    const result = await addAuthor(newAuthor);
+    const result = await addAuthor(authorData);
 
     if (result.success) {
-      setNewBook({ ...newBook, autorId: result.author.autorId });
-      setNewAuthor({
-        imie: '',
-        nazwisko: '',
-        dataUrodzenia: '',
-        kraj: '',
-      });
-      setShowAddAuthorForm(false);
+      selectAuthor(result.author.autorId);
+      resetAuthorForm();
     } else {
       alert(`Błąd podczas dodawania autora: ${result.error}`);
     }
@@ -114,7 +92,8 @@ function Books() {
   // Otwieranie modalu dodawania książki
   const handleOpenAddModal = () => {
     setShowAddModal(true);
-    setShowAddAuthorForm(false);
+    resetBookForm();
+    resetAuthorForm();
     fetchAuthors();
   };
 
@@ -190,17 +169,19 @@ function Books() {
       <BookModal
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
-        bookData={newBook}
-        onBookChange={setNewBook}
         onSubmit={handleAddBook}
         authors={authors}
-        showAuthorForm={showAddAuthorForm}
-        onToggleAuthorForm={setShowAddAuthorForm}
-        authorData={newAuthor}
-        onAuthorChange={setNewAuthor}
         onAuthorSubmit={handleAddAuthor}
       />
     </div>
+  );
+}
+
+function Books() {
+  return (
+    <BookFormProvider>
+      <BooksContent />
+    </BookFormProvider>
   );
 }
 
