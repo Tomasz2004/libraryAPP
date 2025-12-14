@@ -4,7 +4,9 @@ import com.postgresql.libraryAPI.dto.KsiazkaCreateDTO;
 import com.postgresql.libraryAPI.model.Autor;
 import com.postgresql.libraryAPI.model.Ksiazka;
 import com.postgresql.libraryAPI.repository.AutorRepository;
+import com.postgresql.libraryAPI.repository.EgzemplarzRepository;
 import com.postgresql.libraryAPI.repository.KsiazkaRepository;
+import com.postgresql.libraryAPI.repository.WypozyczenieRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +23,12 @@ public class KsiazkaController {
 
     @Autowired
     private AutorRepository autorRepository;
+
+    @Autowired
+    private EgzemplarzRepository egzemplarzRepository;
+
+    @Autowired
+    private WypozyczenieRepository wypozyczenieRepository;
 
     /**
      * FORMULARZ: Wyszukiwanie książek według autora, tytułu, gatunku lub roku
@@ -91,8 +99,29 @@ public class KsiazkaController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteKsiazka(@PathVariable Integer id) {
+    public ResponseEntity<?> deleteKsiazka(@PathVariable Integer id,
+            @RequestParam(required = false, defaultValue = "false") Boolean cascade) {
         return ksiazkaRepository.findById(id).map(ksiazka -> {
+            // Sprawdź czy książka ma powiązane egzemplarze
+            long egzemplarze = egzemplarzRepository.countByKsiazka_KsiazkaId(id);
+            if (egzemplarze > 0) {
+                if (!cascade) {
+                    // Zwróć błąd z informacją o ilości egzemplarzy
+                    return ResponseEntity.status(409)
+                            .body("{\"message\": \"Książka ma powiązane egzemplarze\", \"count\": " + egzemplarze
+                                    + "}");
+                } else {
+                    // Kaskadowe usuwanie: wypożyczenia -> egzemplarze -> książka
+                    egzemplarzRepository.searchEgzemplarze(null, null, id).forEach(egz -> {
+                        // Usuń wszystkie wypożyczenia tego egzemplarza
+                        wypozyczenieRepository.findAll().stream()
+                                .filter(w -> w.getEgzemplarz().getEgzemplarzId().equals(egz.getEgzemplarzId()))
+                                .forEach(w -> wypozyczenieRepository.delete(w));
+                        // Usuń egzemplarz
+                        egzemplarzRepository.delete(egz);
+                    });
+                }
+            }
             ksiazkaRepository.delete(ksiazka);
             return ResponseEntity.ok().build();
         }).orElse(ResponseEntity.notFound().build());

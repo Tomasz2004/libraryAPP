@@ -19,4 +19,7 @@ public interface EgzemplarzRepository extends JpaRepository<Egzemplarz, Integer>
        List<Egzemplarz> searchEgzemplarze(@Param("status") String status,
                      @Param("bibliotekaId") Integer bibliotekaId,
                      @Param("ksiazkaId") Integer ksiazkaId);
+
+       // Liczenie egzemplarzy dla danej książki
+       long countByKsiazka_KsiazkaId(Integer ksiazkaId);
 }
