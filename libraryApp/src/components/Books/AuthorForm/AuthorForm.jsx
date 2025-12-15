@@ -11,6 +11,10 @@ function AuthorForm({ onSubmit }) {
   // Pobierz stan i funkcje z contextu
   const { authorData, setAuthorData, toggleAuthorForm } = useBookForm();
 
+  const handleCancel = () => {
+    toggleAuthorForm(false);
+  };
+
   return (
     <div className='author-form'>
       <h3>Dodaj nowego autora</h3>
@@ -63,7 +67,7 @@ function AuthorForm({ onSubmit }) {
         <button
           type='button'
           className='btn btn-secondary btn-sm'
-          onClick={() => toggleAuthorForm(false)}
+          onClick={handleCancel}
         >
           Anuluj
         </button>

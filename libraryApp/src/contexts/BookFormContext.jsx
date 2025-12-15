@@ -72,10 +72,6 @@ export function BookFormProvider({ children }) {
    */
   const toggleAuthorForm = (show) => {
     setShowAuthorForm(show);
-    if (!show) {
-      // Jeśli zamykamy formularz autora, wyczyść wybór autora
-      setBookData((prev) => ({ ...prev, autorId: '' }));
-    }
   };
 
   /**

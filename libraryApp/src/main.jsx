@@ -5,6 +5,7 @@ import './index.css';
 import Layout from './components/Layout/Layout';
 import Home from './pages/Home/Home';
 import Books from './components/Books/Books';
+import Copies from './components/Copies/Copies';
 
 const router = createBrowserRouter([
   {
@@ -21,12 +22,7 @@ const router = createBrowserRouter([
       },
       {
         path: '/egzemplarze',
-        element: (
-          <div className='container'>
-            <h1>Egzemplarze</h1>
-            <p>Wkrótce...</p>
-          </div>
-        ),
+        element: <Copies />,
       },
       {
         path: '/czytelnicy',

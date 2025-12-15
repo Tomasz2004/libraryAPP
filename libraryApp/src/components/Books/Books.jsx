@@ -2,6 +2,7 @@ import { useState } from 'react';
 import useBooks from '../../hooks/useBooks';
 import useAuthors from '../../hooks/useAuthors';
 import { useBookForm } from '../../hooks/useBookForm';
+import { useSelection } from '../../hooks/useSelection';
 import { BookFormProvider } from '../../contexts/BookFormContext';
 import BookModal from './BookModal/BookModal';
 import './Books.css';
@@ -12,35 +13,34 @@ function BooksContent() {
   const { authors, fetchAuthors, addAuthor } = useAuthors();
 
   // Context - stan formularza
-  const { bookData, authorData, resetBookForm, resetAuthorForm, selectAuthor } =
-    useBookForm();
+  const {
+    bookData,
+    authorData,
+    resetBookForm,
+    resetAuthorForm,
+    selectAuthor,
+    toggleAuthorForm,
+  } = useBookForm();
+
+  // Hook do zaznaczania elementów
+  const {
+    selectedIds: selectedBooks,
+    toggleItem: handleSelectBook,
+    toggleAll: handleSelectAll,
+    isSelected,
+    isAllSelected,
+    clearSelection,
+    count: selectedCount,
+  } = useSelection('ksiazkaId');
 
   // Stan lokalny - tylko dla UI
-  const [selectedBooks, setSelectedBooks] = useState([]);
   const [showAddModal, setShowAddModal] = useState(false);
-
-  // Obsługa zaznaczania książek
-  const handleSelectBook = (bookId) => {
-    setSelectedBooks((prev) =>
-      prev.includes(bookId)
-        ? prev.filter((id) => id !== bookId)
-        : [...prev, bookId]
-    );
-  };
-
-  const handleSelectAll = () => {
-    if (selectedBooks.length === books.length) {
-      setSelectedBooks([]);
-    } else {
-      setSelectedBooks(books.map((book) => book.ksiazkaId));
-    }
-  };
 
   // Usuwanie wybranych książek
   const handleDeleteSelected = async () => {
-    if (selectedBooks.length === 0) return;
+    if (selectedCount === 0) return;
 
-    if (!confirm(`Czy na pewno chcesz usunąć ${selectedBooks.length} książek?`))
+    if (!confirm(`Czy na pewno chcesz usunąć ${selectedCount} książek?`))
       return;
 
     const result = await deleteBooks(selectedBooks);
@@ -52,7 +52,7 @@ function BooksContent() {
       );
     }
 
-    setSelectedBooks([]);
+    clearSelection();
   };
 
   // Dodawanie książki
@@ -84,6 +84,7 @@ function BooksContent() {
     if (result.success) {
       selectAuthor(result.author.autorId);
       resetAuthorForm();
+      toggleAuthorForm(false);
     } else {
       alert(`Błąd podczas dodawania autora: ${result.error}`);
     }
@@ -108,9 +109,9 @@ function BooksContent() {
           <button className='btn btn-primary' onClick={handleOpenAddModal}>
             + Dodaj książkę
           </button>
-          {selectedBooks.length > 0 && (
+          {selectedCount > 0 && (
             <button className='btn btn-danger' onClick={handleDeleteSelected}>
-              Usuń wybrane ({selectedBooks.length})
+              Usuń wybrane ({selectedCount})
             </button>
           )}
         </div>
@@ -123,10 +124,8 @@ function BooksContent() {
               <th>
                 <input
                   type='checkbox'
-                  checked={
-                    selectedBooks.length === books.length && books.length > 0
-                  }
-                  onChange={handleSelectAll}
+                  checked={isAllSelected(books)}
+                  onChange={() => handleSelectAll(books)}
                 />
               </th>
               <th>Tytuł</th>
@@ -140,14 +139,12 @@ function BooksContent() {
             {books.map((book) => (
               <tr
                 key={book.ksiazkaId}
-                className={
-                  selectedBooks.includes(book.ksiazkaId) ? 'selected' : ''
-                }
+                className={isSelected(book.ksiazkaId) ? 'selected' : ''}
               >
                 <td>
                   <input
                     type='checkbox'
-                    checked={selectedBooks.includes(book.ksiazkaId)}
+                    checked={isSelected(book.ksiazkaId)}
                     onChange={() => handleSelectBook(book.ksiazkaId)}
                   />
                 </td>

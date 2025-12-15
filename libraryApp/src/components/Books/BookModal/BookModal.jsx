@@ -66,6 +66,7 @@ function BookModal({ isOpen, onClose, onSubmit, authors, onAuthorSubmit }) {
             <input
               type='text'
               value={bookData.gatunek}
+              required
               onChange={(e) =>
                 setBookData({ ...bookData, gatunek: e.target.value })
               }
@@ -75,6 +76,7 @@ function BookModal({ isOpen, onClose, onSubmit, authors, onAuthorSubmit }) {
           <div className='form-group'>
             <label>Rok wydania</label>
             <input
+              required
               type='number'
               value={bookData.rokWydania}
               onChange={(e) =>
