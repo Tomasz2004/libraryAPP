@@ -75,8 +75,9 @@ function CopiesModal({
           </div>
 
           <div className='form-group'>
-            <label>Kod kreskowy</label>
+            <label>Kod kreskowy *</label>
             <input
+              required
               type='text'
               value={copyData.barcode}
               onChange={(e) =>

@@ -34,4 +34,7 @@ public interface WypozyczenieRepository extends JpaRepository<Wypozyczenie, Inte
                      @Param("dataDo") LocalDate dataDo,
                      @Param("czytelnikId") Integer czytelnikId,
                      @Param("status") String status);
+
+       long countByEgzemplarz_EgzemplarzId(Integer egzemplarzId);
+
 }

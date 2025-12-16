@@ -7,6 +7,7 @@ import com.postgresql.libraryAPI.model.Ksiazka;
 import com.postgresql.libraryAPI.repository.BibliotekaRepository;
 import com.postgresql.libraryAPI.repository.EgzemplarzRepository;
 import com.postgresql.libraryAPI.repository.KsiazkaRepository;
+import com.postgresql.libraryAPI.repository.WypozyczenieRepository;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,9 @@ public class EgzemplarzController {
 
     @Autowired
     private BibliotekaRepository bibliotekaRepository;
+
+    @Autowired
+    private WypozyczenieRepository wypozyczenieRepository;
 
     /**
      * GET wszystkich egzemplarzy z opcjonalnymi filtrami
@@ -139,13 +143,32 @@ public class EgzemplarzController {
 
     // DELETE - usunięcie egzemplarza
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteEgzemplarz(@PathVariable Integer id) {
+    public ResponseEntity<?> deleteEgzemplarz(@PathVariable Integer id,
+            @RequestParam(required = false, defaultValue = "false") Boolean cascade) {
         return egzemplarzRepository.findById(id)
                 .map(egzemplarz -> {
+                    long wypozyczeniaCount = wypozyczenieRepository
+                            .countByEgzemplarz_EgzemplarzId(id);
+                    if (wypozyczeniaCount > 0) {
+                        if (!cascade) {
+                            return ResponseEntity.status(409)
+                                    .body("{\"message\": \"Egzemplarz ma powiązane wypożyczenia\", \"count\": "
+                                            + wypozyczeniaCount + "}");
+
+                        } else {
+                            // Usuń wszystkie wypożyczenia tego egzemplarza
+                            wypozyczenieRepository.findAll().stream()
+                                    .filter(w -> w.getEgzemplarz().getEgzemplarzId()
+                                            .equals(egzemplarz.getEgzemplarzId()))
+                                    .forEach(w -> wypozyczenieRepository.delete(w));
+                        }
+
+                    }
+                    // Usuń egzemplarz
                     egzemplarzRepository.delete(egzemplarz);
-                    return ResponseEntity.ok().<Void>build();
-                })
-                .orElse(ResponseEntity.notFound().build());
+                    return ResponseEntity.ok().build();
+
+                }).orElse(ResponseEntity.notFound().build());
     }
 
 }

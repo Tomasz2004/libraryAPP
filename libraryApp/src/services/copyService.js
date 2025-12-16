@@ -23,8 +23,11 @@ const copyService = {
     });
   },
 
-  delete: async (id) => {
-    return apiRequest(`/egzemplarze/${id}`, { method: 'DELETE' });
+  delete: async (id, cascade = false) => {
+    const endpoint = cascade
+      ? `/egzemplarze/${id}?cascade=true`
+      : `/egzemplarze/${id}`;
+    return apiRequest(endpoint, { method: 'DELETE' });
   },
 };
 

@@ -49,12 +49,29 @@ const useCopies = () => {
   );
 
   const deleteCopy = useCallback(
-    async (id) => {
+    async (id, cascade = false) => {
       try {
-        await copyService.delete(id);
+        await copyService.delete(id, cascade);
         await fetchCopies();
-        return { success: true };
+        return { success: true, id };
       } catch (err) {
+        if (err.status == 409) {
+          const count = err.data?.count || 0;
+          const shouldCascade = window.confirm(
+            `Egzemplarz (ID: ${id}) ma ${count} powiązanych wypożyczeń.\n\n` +
+              `Czy chcesz usunąć egzemplarz wraz z wszystkimi jego wypożyczeniami?`
+          );
+
+          if (shouldCascade) {
+            // Ponów z cascade
+            return await deleteCopy(id, true);
+          } else {
+            return {
+              success: false,
+              error: `Egzemplarz (ID: ${id}) nie został usunięty - ma ${count} wypożyczeń`,
+            };
+          }
+        }
         console.error('Error deleting copy:', err);
         return { success: false, error: err.message };
       }
