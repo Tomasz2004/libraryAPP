@@ -7,6 +7,7 @@ import Home from './pages/Home/Home';
 import Books from './components/Books/Books';
 import Copies from './components/Copies/Copies';
 import Readers from './components/Readers/Readers';
+import Loans from './components/Loans/Loans';
 
 const router = createBrowserRouter([
   {
@@ -31,12 +32,7 @@ const router = createBrowserRouter([
       },
       {
         path: '/wypozyczenia',
-        element: (
-          <div className='container'>
-            <h1>Wypożyczenia</h1>
-            <p>Wkrótce...</p>
-          </div>
-        ),
+        element: <Loans />,
       },
     ],
   },
