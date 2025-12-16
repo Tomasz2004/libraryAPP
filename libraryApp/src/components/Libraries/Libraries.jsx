@@ -1,0 +1,145 @@
+import { useState, useEffect } from 'react';
+import useLibraries from '../../hooks/useLibraries';
+import { useSelection } from '../../hooks/useSelection';
+import LibraryModal from './LibraryModal/LibraryModal';
+import '../Books/Books.css';
+
+function Libraries() {
+  const {
+    libraries,
+    loading,
+    error,
+    fetchLibraries,
+    addLibrary,
+    deleteLibrary,
+  } = useLibraries();
+
+  const {
+    selectedIds: selectedLibraries,
+    toggleItem: handleSelectLibrary,
+    toggleAll: handleSelectAll,
+    isSelected,
+    isAllSelected,
+    clearSelection,
+    count: selectedCount,
+  } = useSelection('bibliotekaId');
+
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [libraryData, setLibraryData] = useState({ nazwa: '', adres: '' });
+
+  useEffect(() => {
+    fetchLibraries();
+  }, [fetchLibraries]);
+
+  const handleDeleteSelected = async () => {
+    if (selectedCount === 0) return;
+
+    if (!confirm(`Czy na pewno chcesz usunąć ${selectedCount} bibliotek?`))
+      return;
+
+    let succeeded = 0;
+    let failed = 0;
+    const errors = [];
+
+    for (const id of selectedLibraries) {
+      const result = await deleteLibrary(id);
+      if (result.success) {
+        succeeded++;
+      } else {
+        failed++;
+        errors.push(`Biblioteka ${id}: ${result.error}`);
+      }
+    }
+
+    if (failed > 0) {
+      alert(`Usunięto: ${succeeded}\nBłędy (${failed}):\n${errors.join('\n')}`);
+    }
+
+    clearSelection();
+  };
+
+  const handleAddLibrary = async (e) => {
+    e.preventDefault();
+
+    const result = await addLibrary(libraryData);
+
+    if (result.success) {
+      setShowAddModal(false);
+      setLibraryData({ nazwa: '', adres: '' });
+    } else {
+      alert(`Błąd podczas dodawania biblioteki: ${result.error}`);
+    }
+  };
+
+  const handleOpenAddModal = () => {
+    setShowAddModal(true);
+    setLibraryData({ nazwa: '', adres: '' });
+  };
+
+  if (loading) return <div className='loading'>Ładowanie bibliotek...</div>;
+  if (error) return <div className='error'>Błąd: {error}</div>;
+
+  return (
+    <div className='container'>
+      <div className='header'>
+        <h1>Lista Bibliotek</h1>
+        <div className='header-actions'>
+          <button className='btn btn-primary' onClick={handleOpenAddModal}>
+            + Dodaj bibliotekę
+          </button>
+          {selectedCount > 0 && (
+            <button className='btn btn-danger' onClick={handleDeleteSelected}>
+              Usuń wybrane ({selectedCount})
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className='table-container'>
+        <table>
+          <thead>
+            <tr>
+              <th>
+                <input
+                  type='checkbox'
+                  checked={isAllSelected(libraries)}
+                  onChange={() => handleSelectAll(libraries)}
+                />
+              </th>
+              <th>Nazwa</th>
+              <th>Adres</th>
+            </tr>
+          </thead>
+          <tbody>
+            {libraries.map((library) => (
+              <tr
+                key={library.bibliotekaId}
+                className={isSelected(library.bibliotekaId) ? 'selected' : ''}
+              >
+                <td>
+                  <input
+                    type='checkbox'
+                    checked={isSelected(library.bibliotekaId)}
+                    onChange={() => handleSelectLibrary(library.bibliotekaId)}
+                  />
+                </td>
+                <td>{library.nazwa}</td>
+                <td>{library.adres}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <LibraryModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onSubmit={handleAddLibrary}
+        libraryData={libraryData}
+        setLibraryData={setLibraryData}
+      />
+    </div>
+  );
+}
+
+export default Libraries;

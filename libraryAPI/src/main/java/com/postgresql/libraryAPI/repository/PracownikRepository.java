@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface PracownikRepository extends JpaRepository<Pracownik, Integer> {
+    // Liczenie pracowników dla danej biblioteki
+    long countByBiblioteka_BibliotekaId(Integer bibliotekaId);
 }

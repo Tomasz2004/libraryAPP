@@ -3,6 +3,9 @@ package com.postgresql.libraryAPI.controller;
 import com.postgresql.libraryAPI.dto.BibliotekaCreateDTO;
 import com.postgresql.libraryAPI.model.Biblioteka;
 import com.postgresql.libraryAPI.repository.BibliotekaRepository;
+import com.postgresql.libraryAPI.repository.EgzemplarzRepository;
+import com.postgresql.libraryAPI.repository.PracownikRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +19,12 @@ public class BibliotekaController {
 
     @Autowired
     private BibliotekaRepository bibliotekaRepository;
+
+    @Autowired
+    private PracownikRepository pracownikRepository;
+
+    @Autowired
+    private EgzemplarzRepository egzemplarzRepository;
 
     // GET wszystkich bibliotek
     @GetMapping
@@ -52,8 +61,27 @@ public class BibliotekaController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteBiblioteka(@PathVariable Integer id) {
+    public ResponseEntity<?> deleteBiblioteka(@PathVariable Integer id,
+            @RequestParam(required = false, defaultValue = "false") boolean cascade) {
         return bibliotekaRepository.findById(id).map(biblioteka -> {
+            long pracownikCount = pracownikRepository.countByBiblioteka_BibliotekaId(id);
+            long egzemplarzCount = egzemplarzRepository.countByBiblioteka_BibliotekaId(id);
+            if (pracownikCount > 0 || egzemplarzCount > 0) {
+                if (!cascade) {
+                    return ResponseEntity.status(409)
+                            .body("{\"message\": \"Biblioteka ma powiązane rekordy\", \"egzemplarze\": "
+                                    + egzemplarzCount + ", \"pracownicy\": " + pracownikCount + "}");
+                } else {
+                    // Usuwanie powiązanych pracowników
+                    pracownikRepository.findAll().stream()
+                            .filter(p -> p.getBiblioteka().getBibliotekaId().equals(biblioteka.getBibliotekaId()))
+                            .forEach(p -> pracownikRepository.delete(p));
+                    // Usuwanie powiązanych egzemplarzy
+                    egzemplarzRepository.findAll().stream()
+                            .filter(e -> e.getBiblioteka().getBibliotekaId().equals(biblioteka.getBibliotekaId()))
+                            .forEach(e -> egzemplarzRepository.delete(e));
+                }
+            }
             bibliotekaRepository.delete(biblioteka);
             return ResponseEntity.ok().build();
         }).orElse(ResponseEntity.notFound().build());

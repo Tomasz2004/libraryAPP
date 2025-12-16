@@ -8,6 +8,8 @@ import Books from './components/Books/Books';
 import Copies from './components/Copies/Copies';
 import Readers from './components/Readers/Readers';
 import Loans from './components/Loans/Loans';
+import Libraries from './components/Libraries/Libraries';
+import Workers from './components/Workers/Workers';
 
 const router = createBrowserRouter([
   {
@@ -33,6 +35,14 @@ const router = createBrowserRouter([
       {
         path: '/wypozyczenia',
         element: <Loans />,
+      },
+      {
+        path: '/biblioteki',
+        element: <Libraries />,
+      },
+      {
+        path: '/pracownicy',
+        element: <Workers />,
       },
     ],
   },

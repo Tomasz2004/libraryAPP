@@ -23,6 +23,12 @@ function Navbar() {
         <li>
           <Link to='/wypozyczenia'>Wypożyczenia</Link>
         </li>
+        <li>
+          <Link to='/biblioteki'>Biblioteki</Link>
+        </li>
+        <li>
+          <Link to='/pracownicy'>Pracownicy</Link>
+        </li>
       </ul>
     </nav>
   );

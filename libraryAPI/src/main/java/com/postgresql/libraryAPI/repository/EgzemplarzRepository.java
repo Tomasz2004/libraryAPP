@@ -22,4 +22,7 @@ public interface EgzemplarzRepository extends JpaRepository<Egzemplarz, Integer>
 
        // Liczenie egzemplarzy dla danej książki
        long countByKsiazka_KsiazkaId(Integer ksiazkaId);
+
+       // Liczenie egzemplarzy dla danej biblioteki
+       long countByBiblioteka_BibliotekaId(Integer bibliotekaId);
 }

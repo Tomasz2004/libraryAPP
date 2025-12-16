@@ -45,9 +45,13 @@ const libraryService = {
   /**
    * Usuwa bibliotekę
    * @param {number} id - ID biblioteki
+   * @param {boolean} cascade - czy usunąć powiązane rekordy
    */
-  delete: async (id) => {
-    return apiRequest(`/biblioteki/${id}`, { method: 'DELETE' });
+  delete: async (id, cascade = false) => {
+    const endpoint = cascade
+      ? `/biblioteki/${id}?cascade=true`
+      : `/biblioteki/${id}`;
+    return apiRequest(endpoint, { method: 'DELETE' });
   },
 };
 
