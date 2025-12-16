@@ -3,6 +3,8 @@ package com.postgresql.libraryAPI.controller;
 import com.postgresql.libraryAPI.dto.CzytelnikCreateDTO;
 import com.postgresql.libraryAPI.model.Czytelnik;
 import com.postgresql.libraryAPI.repository.CzytelnikRepository;
+import com.postgresql.libraryAPI.repository.WypozyczenieRepository;
+
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +20,9 @@ public class CzytelnikController {
 
     @Autowired
     private CzytelnikRepository czytelnikRepository;
+
+    @Autowired
+    private WypozyczenieRepository wypozyczenieRepository;
 
     /**
      * GET wszystkich czytelników z opcjonalnymi filtrami
@@ -66,8 +71,22 @@ public class CzytelnikController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteCzytelnik(@PathVariable Integer id) {
+    public ResponseEntity<?> deleteCzytelnik(@PathVariable Integer id,
+            @RequestParam(required = false, defaultValue = "false") boolean cascade) {
         return czytelnikRepository.findById(id).map(czytelnik -> {
+            long wypozyczeniaCount = wypozyczenieRepository.countByCzytelnik_CzytelnikId(id);
+            if (wypozyczeniaCount > 0) {
+                if (!cascade) {
+                    return ResponseEntity.status(409)
+                            .body("{\"message\": \"Czytelnik ma aktywne wypożyczenia\", \"count\": " + wypozyczeniaCount
+                                    + "}");
+                } else {
+                    wypozyczenieRepository.findAll().stream()
+                            .filter(w -> w.getCzytelnik().getCzytelnikId()
+                                    .equals(czytelnik.getCzytelnikId()) && w.getDataZwrotu() == null)
+                            .forEach(w -> wypozyczenieRepository.delete(w));
+                }
+            }
             czytelnikRepository.delete(czytelnik);
             return ResponseEntity.ok().build();
         }).orElse(ResponseEntity.notFound().build());

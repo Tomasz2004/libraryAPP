@@ -37,4 +37,6 @@ public interface WypozyczenieRepository extends JpaRepository<Wypozyczenie, Inte
 
        long countByEgzemplarz_EgzemplarzId(Integer egzemplarzId);
 
+       long countByCzytelnik_CzytelnikId(Integer czytelnikId);
+
 }
