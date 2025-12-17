@@ -11,7 +11,7 @@ import LoansModal from './LoansModal/LoansModal';
 
 function LoansContent() {
   // Custom hooks - cała logika biznesowa
-  const { loans, loading, error, addLoan, deleteLoan } = useLoans();
+  const { loans, loading, error, addLoan, deleteLoan, fetchLoans } = useLoans();
   const { workers, fetchWorkers } = useWorkers();
   const { copies } = useCopies();
   const { readers } = useReaders();
@@ -28,10 +28,18 @@ function LoansContent() {
     isAllSelected,
     clearSelection,
     count: selectedCount,
-  } = useSelection('pracownikId');
+  } = useSelection('wypozyczenieId');
 
   // Stan lokalny - tylko dla UI
   const [showAddModal, setShowAddModal] = useState(false);
+
+  // Stan filtrów
+  const [filters, setFilters] = useState({
+    dataOd: '',
+    dataDo: '',
+    czytelnikId: '',
+    status: '',
+  });
 
   // Usuwanie wybranych wypożyczeń
   const handleDeleteSelected = async () => {
@@ -83,6 +91,31 @@ function LoansContent() {
     fetchWorkers();
   };
 
+  // Filtrowanie wypożyczeń
+  const handleFilter = (e) => {
+    e.preventDefault();
+    const activeFilters = {};
+
+    if (filters.dataOd) activeFilters.dataOd = filters.dataOd;
+    if (filters.dataDo) activeFilters.dataDo = filters.dataDo;
+    if (filters.czytelnikId)
+      activeFilters.czytelnikId = parseInt(filters.czytelnikId);
+    if (filters.status) activeFilters.status = filters.status;
+
+    fetchLoans(activeFilters);
+  };
+
+  // Resetowanie filtrów
+  const handleClearFilters = () => {
+    setFilters({
+      dataOd: '',
+      dataDo: '',
+      czytelnikId: '',
+      status: '',
+    });
+    fetchLoans();
+  };
+
   if (loading) return <div className='loading'>Ładowanie książek...</div>;
   if (error) return <div className='error'>Błąd: {error}</div>;
 
@@ -100,6 +133,75 @@ function LoansContent() {
             </button>
           )}
         </div>
+      </div>
+
+      {/* Formularz filtrowania */}
+      <div className='filter-section'>
+        <form onSubmit={handleFilter} className='filter-form'>
+          <div className='filter-row'>
+            <div className='form-group'>
+              <label>Data od</label>
+              <input
+                type='date'
+                value={filters.dataOd}
+                onChange={(e) =>
+                  setFilters({ ...filters, dataOd: e.target.value })
+                }
+              />
+            </div>
+            <div className='form-group'>
+              <label>Data do</label>
+              <input
+                type='date'
+                value={filters.dataDo}
+                onChange={(e) =>
+                  setFilters({ ...filters, dataDo: e.target.value })
+                }
+              />
+            </div>
+            <div className='form-group'>
+              <label>Czytelnik</label>
+              <select
+                value={filters.czytelnikId}
+                onChange={(e) =>
+                  setFilters({ ...filters, czytelnikId: e.target.value })
+                }
+              >
+                <option value=''>Wszyscy czytelnicy</option>
+                {readers.map((reader) => (
+                  <option key={reader.czytelnikId} value={reader.czytelnikId}>
+                    {reader.imie} {reader.nazwisko}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className='form-group'>
+              <label>Status</label>
+              <select
+                value={filters.status}
+                onChange={(e) =>
+                  setFilters({ ...filters, status: e.target.value })
+                }
+              >
+                <option value=''>Wszystkie</option>
+                <option value='aktywne'>Aktywne</option>
+                <option value='zwrocone'>Zwrócone</option>
+              </select>
+            </div>
+          </div>
+          <div className='filter-actions'>
+            <button type='submit' className='btn btn-primary'>
+              🔍︎ Filtruj
+            </button>
+            <button
+              type='button'
+              className='btn btn-secondary'
+              onClick={handleClearFilters}
+            >
+              ✕ Wyczyść
+            </button>
+          </div>
+        </form>
       </div>
 
       <div className='table-container'>

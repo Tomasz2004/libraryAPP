@@ -24,6 +24,11 @@ function ReadersContent() {
 
   // // Stan lokalny - tylko dla UI
   const [showAddModal, setShowAddModal] = useState(false);
+  
+  // Stan filtrów
+  const [filters, setFilters] = useState({
+    loanStatus: '',
+  });
 
   // Usuwanie wybranych egzemplarzy
   const handleDeleteSelected = async () => {
@@ -67,6 +72,24 @@ function ReadersContent() {
     fetchReaders();
   };
 
+  // Filtrowanie czytelników
+  const handleFilter = (e) => {
+    e.preventDefault();
+    const activeFilters = {};
+    
+    if (filters.loanStatus) activeFilters.loanStatus = filters.loanStatus;
+    
+    fetchReaders(activeFilters);
+  };
+
+  // Resetowanie filtrów
+  const handleClearFilters = () => {
+    setFilters({
+      loanStatus: '',
+    });
+    fetchReaders();
+  };
+
   if (loading) return <div className='loading'>Ładowanie czytelników...</div>;
   if (error) return <div className='error'>Błąd: {error}</div>;
 
@@ -82,6 +105,39 @@ function ReadersContent() {
             Usuń wybrane ({selectedCount})
           </button>
         </div>
+      </div>
+
+      {/* Formularz filtrowania */}
+      <div className='filter-section'>
+        <form onSubmit={handleFilter} className='filter-form'>
+          <div className='filter-row'>
+            <div className='form-group'>
+              <label>Status wypożyczeń</label>
+              <select
+                value={filters.loanStatus}
+                onChange={(e) =>
+                  setFilters({ ...filters, loanStatus: e.target.value })
+                }
+              >
+                <option value=''>Wszyscy czytelnicy</option>
+                <option value='active'>Z aktywnymi wypożyczeniami</option>
+                <option value='none'>Bez aktywnych wypożyczeń</option>
+              </select>
+            </div>
+          </div>
+          <div className='filter-actions'>
+            <button type='submit' className='btn btn-primary'>
+              🔍 Filtruj
+            </button>
+            <button
+              type='button'
+              className='btn btn-secondary'
+              onClick={handleClearFilters}
+            >
+              ✕ Wyczyść
+            </button>
+          </div>
+        </form>
       </div>
 
       <div className='table-container'>

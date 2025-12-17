@@ -9,7 +9,8 @@ import './Books.css';
 
 function BooksContent() {
   // Custom hooks - cała logika biznesowa
-  const { books, loading, error, addBook, deleteBooks } = useBooks();
+  const { books, loading, error, addBook, deleteBooks, fetchBooks } =
+    useBooks();
   const { authors, fetchAuthors, addAuthor } = useAuthors();
 
   // Context - stan formularza
@@ -35,6 +36,14 @@ function BooksContent() {
 
   // Stan lokalny - tylko dla UI
   const [showAddModal, setShowAddModal] = useState(false);
+
+  // Stan filtrów
+  const [filters, setFilters] = useState({
+    tytul: '',
+    autor: '',
+    gatunek: '',
+    rokWydania: '',
+  });
 
   // Usuwanie wybranych książek
   const handleDeleteSelected = async () => {
@@ -98,6 +107,31 @@ function BooksContent() {
     fetchAuthors();
   };
 
+  // Filtrowanie książek
+  const handleFilter = (e) => {
+    e.preventDefault();
+    const activeFilters = {};
+
+    if (filters.tytul) activeFilters.tytul = filters.tytul;
+    if (filters.autor) activeFilters.autor = filters.autor;
+    if (filters.gatunek) activeFilters.gatunek = filters.gatunek;
+    if (filters.rokWydania)
+      activeFilters.rokWydania = parseInt(filters.rokWydania);
+
+    fetchBooks(activeFilters);
+  };
+
+  // Resetowanie filtrów
+  const handleClearFilters = () => {
+    setFilters({
+      tytul: '',
+      autor: '',
+      gatunek: '',
+      rokWydania: '',
+    });
+    fetchBooks();
+  };
+
   if (loading) return <div className='loading'>Ładowanie książek...</div>;
   if (error) return <div className='error'>Błąd: {error}</div>;
 
@@ -115,6 +149,70 @@ function BooksContent() {
             </button>
           )}
         </div>
+      </div>
+
+      {/* Formularz filtrowania */}
+      <div className='filter-section'>
+        <form onSubmit={handleFilter} className='filter-form'>
+          <div className='filter-row'>
+            <div className='form-group'>
+              <label>Tytuł</label>
+              <input
+                type='text'
+                placeholder='Wpisz tytuł...'
+                value={filters.tytul}
+                onChange={(e) =>
+                  setFilters({ ...filters, tytul: e.target.value })
+                }
+              />
+            </div>
+            <div className='form-group'>
+              <label>Autor</label>
+              <input
+                type='text'
+                placeholder='Wpisz nazwisko autora...'
+                value={filters.autor}
+                onChange={(e) =>
+                  setFilters({ ...filters, autor: e.target.value })
+                }
+              />
+            </div>
+            <div className='form-group'>
+              <label>Gatunek</label>
+              <input
+                type='text'
+                placeholder='Wpisz gatunek...'
+                value={filters.gatunek}
+                onChange={(e) =>
+                  setFilters({ ...filters, gatunek: e.target.value })
+                }
+              />
+            </div>
+            <div className='form-group'>
+              <label>Rok wydania</label>
+              <input
+                type='number'
+                placeholder='Rok...'
+                value={filters.rokWydania}
+                onChange={(e) =>
+                  setFilters({ ...filters, rokWydania: e.target.value })
+                }
+              />
+            </div>
+          </div>
+          <div className='filter-actions'>
+            <button type='submit' className='btn btn-primary'>
+              🔍︎ Filtruj
+            </button>
+            <button
+              type='button'
+              className='btn btn-secondary'
+              onClick={handleClearFilters}
+            >
+              ✕ Wyczyść
+            </button>
+          </div>
+        </form>
       </div>
 
       <div className='table-container'>

@@ -1,8 +1,16 @@
 import apiRequest from './api';
 
 const copyService = {
-  getAll: async () => {
-    return apiRequest('/egzemplarze');
+  getAll: async (filters = {}) => {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) params.append(key, value);
+    });
+
+    const queryString = params.toString();
+    const endpoint = queryString ? `/egzemplarze?${queryString}` : '/egzemplarze';
+
+    return apiRequest(endpoint);
   },
 
   getById: async (id) => {

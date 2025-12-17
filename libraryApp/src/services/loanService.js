@@ -1,8 +1,18 @@
 import apiRequest from './api';
 
-const readerService = {
-  getAll: async () => {
-    return apiRequest('/wypozyczenia');
+const loanService = {
+  getAll: async (filters = {}) => {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) params.append(key, value);
+    });
+
+    const queryString = params.toString();
+    const endpoint = queryString
+      ? `/wypozyczenia?${queryString}`
+      : '/wypozyczenia';
+
+    return apiRequest(endpoint);
   },
 
   getById: async (id) => {
@@ -28,4 +38,4 @@ const readerService = {
   },
 };
 
-export default readerService;
+export default loanService;

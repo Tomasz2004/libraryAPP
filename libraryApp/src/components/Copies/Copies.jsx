@@ -9,7 +9,7 @@ import CopiesModal from './CopiesModal/CopiesModal';
 import { CopiesFormProvider } from '../../contexts/CopiesFormContext';
 
 function CopiesContent() {
-  const { copies, loading, error, addCopy, deleteCopy } = useCopies();
+  const { copies, loading, error, addCopy, deleteCopy, fetchCopies } = useCopies();
   const { libraries, fetchLibraries, addLibrary } = useLibraries();
   const { books, fetchBooks } = useBooks();
 
@@ -34,6 +34,13 @@ function CopiesContent() {
 
   // // Stan lokalny - tylko dla UI
   const [showAddModal, setShowAddModal] = useState(false);
+  
+  // Stan filtrów
+  const [filters, setFilters] = useState({
+    status: '',
+    bibliotekaId: '',
+    ksiazkaId: '',
+  });
 
   // Usuwanie wybranych egzemplarzy
   const handleDeleteSelected = async () => {
@@ -97,6 +104,28 @@ function CopiesContent() {
     fetchBooks();
   };
 
+  // Filtrowanie egzemplarzy
+  const handleFilter = (e) => {
+    e.preventDefault();
+    const activeFilters = {};
+    
+    if (filters.status) activeFilters.status = filters.status;
+    if (filters.bibliotekaId) activeFilters.bibliotekaId = parseInt(filters.bibliotekaId);
+    if (filters.ksiazkaId) activeFilters.ksiazkaId = parseInt(filters.ksiazkaId);
+    
+    fetchCopies(activeFilters);
+  };
+
+  // Resetowanie filtrów
+  const handleClearFilters = () => {
+    setFilters({
+      status: '',
+      bibliotekaId: '',
+      ksiazkaId: '',
+    });
+    fetchCopies();
+  };
+
   if (loading) return <div className='loading'>Ładowanie egzemplarzy...</div>;
   if (error) return <div className='error'>Błąd: {error}</div>;
 
@@ -112,6 +141,72 @@ function CopiesContent() {
             Usuń wybrane ({selectedCount})
           </button>
         </div>
+      </div>
+
+      {/* Formularz filtrowania */}
+      <div className='filter-section'>
+        <form onSubmit={handleFilter} className='filter-form'>
+          <div className='filter-row'>
+            <div className='form-group'>
+              <label>Status</label>
+              <select
+                value={filters.status}
+                onChange={(e) =>
+                  setFilters({ ...filters, status: e.target.value })
+                }
+              >
+                <option value=''>Wszystkie</option>
+                <option value='dostepny'>Dostępny</option>
+                <option value='wypozyczony'>Wypożyczony</option>
+                <option value='zablokowany'>Zablokowany</option>
+              </select>
+            </div>
+            <div className='form-group'>
+              <label>Biblioteka</label>
+              <select
+                value={filters.bibliotekaId}
+                onChange={(e) =>
+                  setFilters({ ...filters, bibliotekaId: e.target.value })
+                }
+              >
+                <option value=''>Wszystkie biblioteki</option>
+                {libraries.map((library) => (
+                  <option key={library.bibliotekaId} value={library.bibliotekaId}>
+                    {library.nazwa}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className='form-group'>
+              <label>Książka</label>
+              <select
+                value={filters.ksiazkaId}
+                onChange={(e) =>
+                  setFilters({ ...filters, ksiazkaId: e.target.value })
+                }
+              >
+                <option value=''>Wszystkie książki</option>
+                {books.map((book) => (
+                  <option key={book.ksiazkaId} value={book.ksiazkaId}>
+                    {book.tytul}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className='filter-actions'>
+            <button type='submit' className='btn btn-primary'>
+              🔍 Filtruj
+            </button>
+            <button
+              type='button'
+              className='btn btn-secondary'
+              onClick={handleClearFilters}
+            >
+              ✕ Wyczyść
+            </button>
+          </div>
+        </form>
       </div>
 
       <div className='table-container'>
