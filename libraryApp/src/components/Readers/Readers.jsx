@@ -1,5 +1,6 @@
 import '../Books/Books.css';
 import { useSelection } from '../../hooks/useSelection';
+import useSorting from '../../hooks/useSorting';
 import { useState } from 'react';
 import useReaders from '../../hooks/useReaders';
 import { useReadersForm } from '../../hooks/useReadersForm';
@@ -29,6 +30,26 @@ function ReadersContent() {
   const [filters, setFilters] = useState({
     loanStatus: '',
   });
+
+  // Konfiguracja sortowania
+  const sortConfig = {
+    imie: (a, b) => a.imie.toLowerCase().localeCompare(b.imie.toLowerCase()),
+    nazwisko: (a, b) =>
+      a.nazwisko.toLowerCase().localeCompare(b.nazwisko.toLowerCase()),
+    email: (a, b) =>
+      (a.email || '')
+        .toLowerCase()
+        .localeCompare((b.email || '').toLowerCase()),
+    telefon: (a, b) => (a.telefon || '').localeCompare(b.telefon || ''),
+    dataRejestracji: (a, b) =>
+      new Date(a.dataRejestracji) - new Date(b.dataRejestracji),
+  };
+
+  const {
+    sortedData: sortedReaders,
+    handleSort,
+    getSortIcon,
+  } = useSorting(readers, sortConfig);
 
   // Usuwanie wybranych egzemplarzy
   const handleDeleteSelected = async () => {
@@ -153,15 +174,33 @@ function ReadersContent() {
                   onChange={() => handleSelectAll(readers)}
                 />
               </th>
-              <th>Imię</th>
-              <th>Nazwisko</th>
-              <th>Email</th>
-              <th>Telefon</th>
-              <th>Data rejestracji</th>
+              <th className='sortable' onClick={() => handleSort('imie')}>
+                Imię <span className='sort-arrow'>{getSortIcon('imie')}</span>
+              </th>
+              <th className='sortable' onClick={() => handleSort('nazwisko')}>
+                Nazwisko{' '}
+                <span className='sort-arrow'>{getSortIcon('nazwisko')}</span>
+              </th>
+              <th className='sortable' onClick={() => handleSort('email')}>
+                Email <span className='sort-arrow'>{getSortIcon('email')}</span>
+              </th>
+              <th className='sortable' onClick={() => handleSort('telefon')}>
+                Telefon{' '}
+                <span className='sort-arrow'>{getSortIcon('telefon')}</span>
+              </th>
+              <th
+                className='sortable'
+                onClick={() => handleSort('dataRejestracji')}
+              >
+                Data rejestracji{' '}
+                <span className='sort-arrow'>
+                  {getSortIcon('dataRejestracji')}
+                </span>
+              </th>
             </tr>
           </thead>
           <tbody>
-            {readers.map((reader) => (
+            {sortedReaders.map((reader) => (
               <tr
                 key={reader.czytelnikId}
                 className={isSelected(reader.czytelnikId) ? 'selected' : ''}

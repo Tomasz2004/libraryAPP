@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import useLoans from '../../hooks/useLoans';
 import { useSelection } from '../../hooks/useSelection';
+import useSorting from '../../hooks/useSorting';
 import '../Books/Books.css';
 import useWorkers from '../../hooks/useWorkers';
 import { useLoansForm } from '../../hooks/useLoansForm';
@@ -40,6 +41,47 @@ function LoansContent() {
     czytelnikId: '',
     status: '',
   });
+
+  // Konfiguracja sortowania
+  const sortConfig = {
+    tytul: (a, b) => {
+      const av = a.egzemplarz?.ksiazka?.tytul || '';
+      const bv = b.egzemplarz?.ksiazka?.tytul || '';
+      return av.toLowerCase().localeCompare(bv.toLowerCase());
+    },
+    czytelnik: (a, b) => {
+      const av = a.czytelnik
+        ? `${a.czytelnik.nazwisko} ${a.czytelnik.imie}`.toLowerCase()
+        : '';
+      const bv = b.czytelnik
+        ? `${b.czytelnik.nazwisko} ${b.czytelnik.imie}`.toLowerCase()
+        : '';
+      return av.localeCompare(bv);
+    },
+    pracownik: (a, b) => {
+      const av = a.pracownik
+        ? `${a.pracownik.nazwisko} ${a.pracownik.imie}`.toLowerCase()
+        : '';
+      const bv = b.pracownik
+        ? `${b.pracownik.nazwisko} ${b.pracownik.imie}`.toLowerCase()
+        : '';
+      return av.localeCompare(bv);
+    },
+    dataWypozyczenia: (a, b) =>
+      new Date(a.dataWypozyczenia) - new Date(b.dataWypozyczenia),
+    terminZwrotu: (a, b) => new Date(a.terminZwrotu) - new Date(b.terminZwrotu),
+    dataZwrotu: (a, b) => {
+      const ad = a.dataZwrotu ? new Date(a.dataZwrotu) : new Date('9999-12-31');
+      const bd = b.dataZwrotu ? new Date(b.dataZwrotu) : new Date('9999-12-31');
+      return ad - bd;
+    },
+  };
+
+  const {
+    sortedData: sortedLoans,
+    handleSort,
+    getSortIcon,
+  } = useSorting(loans, sortConfig);
 
   // Usuwanie wybranych wypożyczeń
   const handleDeleteSelected = async () => {
@@ -215,17 +257,45 @@ function LoansContent() {
                   onChange={() => handleSelectAll(loans)}
                 />
               </th>
-              <th>Tytuł egzemplarza</th>
-              <th>Czytelnik</th>
-              <th>Pracownik</th>
-              <th>Data Wypożyczenia</th>
-              <th>Termin Zwrotu</th>
-              <th>Data Zwrotu</th>
+              <th className='sortable' onClick={() => handleSort('tytul')}>
+                Tytuł egzemplarza{' '}
+                <span className='sort-arrow'>{getSortIcon('tytul')}</span>
+              </th>
+              <th className='sortable' onClick={() => handleSort('czytelnik')}>
+                Czytelnik{' '}
+                <span className='sort-arrow'>{getSortIcon('czytelnik')}</span>
+              </th>
+              <th className='sortable' onClick={() => handleSort('pracownik')}>
+                Pracownik{' '}
+                <span className='sort-arrow'>{getSortIcon('pracownik')}</span>
+              </th>
+              <th
+                className='sortable'
+                onClick={() => handleSort('dataWypozyczenia')}
+              >
+                Data Wypożyczenia{' '}
+                <span className='sort-arrow'>
+                  {getSortIcon('dataWypozyczenia')}
+                </span>
+              </th>
+              <th
+                className='sortable'
+                onClick={() => handleSort('terminZwrotu')}
+              >
+                Termin Zwrotu{' '}
+                <span className='sort-arrow'>
+                  {getSortIcon('terminZwrotu')}
+                </span>
+              </th>
+              <th className='sortable' onClick={() => handleSort('dataZwrotu')}>
+                Data Zwrotu{' '}
+                <span className='sort-arrow'>{getSortIcon('dataZwrotu')}</span>
+              </th>
               <th>Uwagi</th>
             </tr>
           </thead>
           <tbody>
-            {loans.map((loan) => (
+            {sortedLoans.map((loan) => (
               <tr
                 key={loan.wypozyczenieId}
                 className={isSelected(loan.wypozyczenieId) ? 'selected' : ''}

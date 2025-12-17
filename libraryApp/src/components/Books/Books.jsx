@@ -3,6 +3,7 @@ import useBooks from '../../hooks/useBooks';
 import useAuthors from '../../hooks/useAuthors';
 import { useBookForm } from '../../hooks/useBookForm';
 import { useSelection } from '../../hooks/useSelection';
+import useSorting from '../../hooks/useSorting';
 import { BookFormProvider } from '../../contexts/BookFormContext';
 import BookModal from './BookModal/BookModal';
 import './Books.css';
@@ -44,6 +45,36 @@ function BooksContent() {
     gatunek: '',
     rokWydania: '',
   });
+
+  // Konfiguracja sortowania
+  const sortConfig = {
+    tytul: (a, b) =>
+      (a.tytul || '')
+        .toLowerCase()
+        .localeCompare((b.tytul || '').toLowerCase()),
+    autor: (a, b) => {
+      const av = a.autor
+        ? `${a.autor.nazwisko} ${a.autor.imie}`.toLowerCase()
+        : '';
+      const bv = b.autor
+        ? `${b.autor.nazwisko} ${b.autor.imie}`.toLowerCase()
+        : '';
+      return av.localeCompare(bv);
+    },
+    gatunek: (a, b) =>
+      (a.gatunek || '')
+        .toLowerCase()
+        .localeCompare((b.gatunek || '').toLowerCase()),
+    rokWydania: (a, b) => (a.rokWydania || 0) - (b.rokWydania || 0),
+    isbn: (a, b) =>
+      (a.isbn || '').toLowerCase().localeCompare((b.isbn || '').toLowerCase()),
+  };
+
+  const {
+    sortedData: sortedBooks,
+    handleSort,
+    getSortIcon,
+  } = useSorting(books, sortConfig);
 
   // Usuwanie wybranych książek
   const handleDeleteSelected = async () => {
@@ -226,15 +257,27 @@ function BooksContent() {
                   onChange={() => handleSelectAll(books)}
                 />
               </th>
-              <th>Tytuł</th>
-              <th>Autor</th>
-              <th>Gatunek</th>
-              <th>Rok Wydania</th>
-              <th>ISBN</th>
+              <th className='sortable' onClick={() => handleSort('tytul')}>
+                Tytuł <span className='sort-arrow'>{getSortIcon('tytul')}</span>
+              </th>
+              <th className='sortable' onClick={() => handleSort('autor')}>
+                Autor <span className='sort-arrow'>{getSortIcon('autor')}</span>
+              </th>
+              <th className='sortable' onClick={() => handleSort('gatunek')}>
+                Gatunek{' '}
+                <span className='sort-arrow'>{getSortIcon('gatunek')}</span>
+              </th>
+              <th className='sortable' onClick={() => handleSort('rokWydania')}>
+                Rok Wydania{' '}
+                <span className='sort-arrow'>{getSortIcon('rokWydania')}</span>
+              </th>
+              <th className='sortable' onClick={() => handleSort('isbn')}>
+                ISBN <span className='sort-arrow'>{getSortIcon('isbn')}</span>
+              </th>
             </tr>
           </thead>
           <tbody>
-            {books.map((book) => (
+            {sortedBooks.map((book) => (
               <tr
                 key={book.ksiazkaId}
                 className={isSelected(book.ksiazkaId) ? 'selected' : ''}

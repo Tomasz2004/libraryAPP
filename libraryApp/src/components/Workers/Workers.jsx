@@ -2,6 +2,7 @@ import { useState } from 'react';
 import useWorkers from '../../hooks/useWorkers';
 import useLibraries from '../../hooks/useLibraries';
 import { useSelection } from '../../hooks/useSelection';
+import useSorting from '../../hooks/useSorting';
 import WorkerModal from './WorkerModal/WorkerModal';
 import '../Books/Books.css';
 
@@ -27,6 +28,35 @@ function Workers() {
     bibliotekaId: '',
     zatrudnionyOd: '',
   });
+
+  // Konfiguracja sortowania
+  const sortConfig = {
+    imie: (a, b) => a.imie.toLowerCase().localeCompare(b.imie.toLowerCase()),
+    nazwisko: (a, b) =>
+      a.nazwisko.toLowerCase().localeCompare(b.nazwisko.toLowerCase()),
+    stanowisko: (a, b) =>
+      a.stanowisko.toLowerCase().localeCompare(b.stanowisko.toLowerCase()),
+    biblioteka: (a, b) => {
+      const av = a.biblioteka?.nazwa || '';
+      const bv = b.biblioteka?.nazwa || '';
+      return av.toLowerCase().localeCompare(bv.toLowerCase());
+    },
+    zatrudnionyOd: (a, b) => {
+      const ad = a.zatrudnionyOd
+        ? new Date(a.zatrudnionyOd)
+        : new Date('9999-12-31');
+      const bd = b.zatrudnionyOd
+        ? new Date(b.zatrudnionyOd)
+        : new Date('9999-12-31');
+      return ad - bd;
+    },
+  };
+
+  const {
+    sortedData: sortedWorkers,
+    handleSort,
+    getSortIcon,
+  } = useSorting(workers, sortConfig);
 
   const handleDeleteSelected = async () => {
     if (selectedCount === 0) return;
@@ -121,15 +151,34 @@ function Workers() {
                   onChange={() => handleSelectAll(workers)}
                 />
               </th>
-              <th>Imię</th>
-              <th>Nazwisko</th>
-              <th>Stanowisko</th>
-              <th>Biblioteka</th>
-              <th>Zatrudniony od</th>
+              <th className='sortable' onClick={() => handleSort('imie')}>
+                Imię <span className='sort-arrow'>{getSortIcon('imie')}</span>
+              </th>
+              <th className='sortable' onClick={() => handleSort('nazwisko')}>
+                Nazwisko{' '}
+                <span className='sort-arrow'>{getSortIcon('nazwisko')}</span>
+              </th>
+              <th className='sortable' onClick={() => handleSort('stanowisko')}>
+                Stanowisko{' '}
+                <span className='sort-arrow'>{getSortIcon('stanowisko')}</span>
+              </th>
+              <th className='sortable' onClick={() => handleSort('biblioteka')}>
+                Biblioteka{' '}
+                <span className='sort-arrow'>{getSortIcon('biblioteka')}</span>
+              </th>
+              <th
+                className='sortable'
+                onClick={() => handleSort('zatrudnionyOd')}
+              >
+                Zatrudniony od{' '}
+                <span className='sort-arrow'>
+                  {getSortIcon('zatrudnionyOd')}
+                </span>
+              </th>
             </tr>
           </thead>
           <tbody>
-            {workers.map((worker) => (
+            {sortedWorkers.map((worker) => (
               <tr
                 key={worker.pracownikId}
                 className={isSelected(worker.pracownikId) ? 'selected' : ''}

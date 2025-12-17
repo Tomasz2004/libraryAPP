@@ -3,6 +3,7 @@ import useBooks from '../../hooks/useBooks';
 import '../Books/Books.css';
 import { useSelection } from '../../hooks/useSelection';
 import { useCopiesForm } from '../../hooks/useCopiesForm';
+import useSorting from '../../hooks/useSorting';
 import { useState } from 'react';
 import useLibraries from '../../hooks/useLibraries';
 import CopiesModal from './CopiesModal/CopiesModal';
@@ -42,6 +43,35 @@ function CopiesContent() {
     bibliotekaId: '',
     ksiazkaId: '',
   });
+
+  // Konfiguracja sortowania
+  const sortConfig = {
+    tytul: (a, b) =>
+      a.ksiazka.tytul
+        .toLowerCase()
+        .localeCompare(b.ksiazka.tytul.toLowerCase()),
+    biblioteka: (a, b) =>
+      a.biblioteka.nazwa
+        .toLowerCase()
+        .localeCompare(b.biblioteka.nazwa.toLowerCase()),
+    sygnatura: (a, b) =>
+      (a.sygnatura || '')
+        .toLowerCase()
+        .localeCompare((b.sygnatura || '').toLowerCase()),
+    barcode: (a, b) =>
+      (a.barcode || '')
+        .toLowerCase()
+        .localeCompare((b.barcode || '').toLowerCase()),
+    status: (a, b) =>
+      a.status.toLowerCase().localeCompare(b.status.toLowerCase()),
+    dataDodania: (a, b) => new Date(a.dataDodania) - new Date(b.dataDodania),
+  };
+
+  const {
+    sortedData: sortedCopies,
+    handleSort,
+    getSortIcon,
+  } = useSorting(copies, sortConfig);
 
   // Usuwanie wybranych egzemplarzy
   const handleDeleteSelected = async () => {
@@ -228,16 +258,37 @@ function CopiesContent() {
                   onChange={() => handleSelectAll(copies)}
                 />
               </th>
-              <th>Tytuł książki</th>
-              <th>Biblioteka</th>
-              <th>Sygnatura</th>
-              <th>Kod kreskowy</th>
-              <th>Status</th>
-              <th>Data dodania</th>
+              <th className='sortable' onClick={() => handleSort('tytul')}>
+                Tytuł książki{' '}
+                <span className='sort-arrow'>{getSortIcon('tytul')}</span>
+              </th>
+              <th className='sortable' onClick={() => handleSort('biblioteka')}>
+                Biblioteka{' '}
+                <span className='sort-arrow'>{getSortIcon('biblioteka')}</span>
+              </th>
+              <th className='sortable' onClick={() => handleSort('sygnatura')}>
+                Sygnatura{' '}
+                <span className='sort-arrow'>{getSortIcon('sygnatura')}</span>
+              </th>
+              <th className='sortable' onClick={() => handleSort('barcode')}>
+                Kod kreskowy{' '}
+                <span className='sort-arrow'>{getSortIcon('barcode')}</span>
+              </th>
+              <th className='sortable' onClick={() => handleSort('status')}>
+                Status{' '}
+                <span className='sort-arrow'>{getSortIcon('status')}</span>
+              </th>
+              <th
+                className='sortable'
+                onClick={() => handleSort('dataDodania')}
+              >
+                Data dodania{' '}
+                <span className='sort-arrow'>{getSortIcon('dataDodania')}</span>
+              </th>
             </tr>
           </thead>
           <tbody>
-            {copies.map((copy) => (
+            {sortedCopies.map((copy) => (
               <tr
                 key={copy.egzemplarzId}
                 className={isSelected(copy.egzemplarzId) ? 'selected' : ''}

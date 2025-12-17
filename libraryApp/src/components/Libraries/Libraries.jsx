@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import useLibraries from '../../hooks/useLibraries';
 import { useSelection } from '../../hooks/useSelection';
+import useSorting from '../../hooks/useSorting';
 import LibraryModal from './LibraryModal/LibraryModal';
 import '../Books/Books.css';
 
@@ -26,6 +27,21 @@ function Libraries() {
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [libraryData, setLibraryData] = useState({ nazwa: '', adres: '' });
+
+  // Konfiguracja sortowania
+  const sortConfig = {
+    nazwa: (a, b) => a.nazwa.toLowerCase().localeCompare(b.nazwa.toLowerCase()),
+    adres: (a, b) =>
+      (a.adres || '')
+        .toLowerCase()
+        .localeCompare((b.adres || '').toLowerCase()),
+  };
+
+  const {
+    sortedData: sortedLibraries,
+    handleSort,
+    getSortIcon,
+  } = useSorting(libraries, sortConfig);
 
   useEffect(() => {
     fetchLibraries();
@@ -106,12 +122,16 @@ function Libraries() {
                   onChange={() => handleSelectAll(libraries)}
                 />
               </th>
-              <th>Nazwa</th>
-              <th>Adres</th>
+              <th className='sortable' onClick={() => handleSort('nazwa')}>
+                Nazwa <span className='sort-arrow'>{getSortIcon('nazwa')}</span>
+              </th>
+              <th className='sortable' onClick={() => handleSort('adres')}>
+                Adres <span className='sort-arrow'>{getSortIcon('adres')}</span>
+              </th>
             </tr>
           </thead>
           <tbody>
-            {libraries.map((library) => (
+            {sortedLibraries.map((library) => (
               <tr
                 key={library.bibliotekaId}
                 className={isSelected(library.bibliotekaId) ? 'selected' : ''}
