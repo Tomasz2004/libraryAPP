@@ -2,6 +2,7 @@ import { useState } from 'react';
 import useLoans from '../../hooks/useLoans';
 import { useSelection } from '../../hooks/useSelection';
 import useSorting from '../../hooks/useSorting';
+import usePagination from '../../hooks/usePagination';
 import '../Books/Books.css';
 import useWorkers from '../../hooks/useWorkers';
 import { useLoansForm } from '../../hooks/useLoansForm';
@@ -82,6 +83,20 @@ function LoansContent() {
     handleSort,
     getSortIcon,
   } = useSorting(loans, sortConfig);
+
+  const {
+    paginatedData: displayedLoans,
+    currentPage,
+    totalPages,
+    itemsPerPage,
+    goToPage,
+    nextPage,
+    prevPage,
+    changeItemsPerPage,
+    startIndex,
+    endIndex,
+    totalItems,
+  } = usePagination(sortedLoans, 10);
 
   // Usuwanie wybranych wypożyczeń
   const handleDeleteSelected = async () => {
@@ -295,7 +310,7 @@ function LoansContent() {
             </tr>
           </thead>
           <tbody>
-            {sortedLoans.map((loan) => (
+            {displayedLoans.map((loan) => (
               <tr
                 key={loan.wypozyczenieId}
                 className={isSelected(loan.wypozyczenieId) ? 'selected' : ''}
@@ -330,6 +345,37 @@ function LoansContent() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Paginacja */}
+      <div className='pagination'>
+        <div className='pagination-info'>
+          Wyświetlanie {startIndex}-{endIndex} z {totalItems} wypożyczeń
+        </div>
+        <div className='pagination-controls'>
+          <button onClick={prevPage} disabled={currentPage === 1}>
+            ← Poprzednia
+          </button>
+          <span className='page-number'>
+            Strona {currentPage} z {totalPages}
+          </span>
+          <button onClick={nextPage} disabled={currentPage === totalPages}>
+            Następna →
+          </button>
+        </div>
+        <div className='pagination-per-page'>
+          <label>Pokaż:</label>
+          <select
+            value={itemsPerPage}
+            onChange={(e) => changeItemsPerPage(Number(e.target.value))}
+          >
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+          </select>
+        </div>
       </div>
 
       <LoansModal

@@ -4,6 +4,7 @@ import useAuthors from '../../hooks/useAuthors';
 import { useBookForm } from '../../hooks/useBookForm';
 import { useSelection } from '../../hooks/useSelection';
 import useSorting from '../../hooks/useSorting';
+import usePagination from '../../hooks/usePagination';
 import { BookFormProvider } from '../../contexts/BookFormContext';
 import BookModal from './BookModal/BookModal';
 import './Books.css';
@@ -75,6 +76,20 @@ function BooksContent() {
     handleSort,
     getSortIcon,
   } = useSorting(books, sortConfig);
+
+  const {
+    paginatedData: displayedBooks,
+    currentPage,
+    totalPages,
+    itemsPerPage,
+    goToPage,
+    nextPage,
+    prevPage,
+    changeItemsPerPage,
+    startIndex,
+    endIndex,
+    totalItems,
+  } = usePagination(sortedBooks, 10);
 
   // Usuwanie wybranych książek
   const handleDeleteSelected = async () => {
@@ -277,7 +292,7 @@ function BooksContent() {
             </tr>
           </thead>
           <tbody>
-            {sortedBooks.map((book) => (
+            {displayedBooks.map((book) => (
               <tr
                 key={book.ksiazkaId}
                 className={isSelected(book.ksiazkaId) ? 'selected' : ''}
@@ -302,6 +317,37 @@ function BooksContent() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Paginacja */}
+      <div className='pagination'>
+        <div className='pagination-info'>
+          Wyświetlanie {startIndex}-{endIndex} z {totalItems} książek
+        </div>
+        <div className='pagination-controls'>
+          <button onClick={prevPage} disabled={currentPage === 1}>
+            ← Poprzednia
+          </button>
+          <span className='page-number'>
+            Strona {currentPage} z {totalPages}
+          </span>
+          <button onClick={nextPage} disabled={currentPage === totalPages}>
+            Następna →
+          </button>
+        </div>
+        <div className='pagination-per-page'>
+          <label>Pokaż:</label>
+          <select
+            value={itemsPerPage}
+            onChange={(e) => changeItemsPerPage(Number(e.target.value))}
+          >
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+          </select>
+        </div>
       </div>
 
       <BookModal

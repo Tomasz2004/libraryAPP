@@ -1,6 +1,7 @@
 import '../Books/Books.css';
 import { useSelection } from '../../hooks/useSelection';
 import useSorting from '../../hooks/useSorting';
+import usePagination from '../../hooks/usePagination';
 import { useState } from 'react';
 import useReaders from '../../hooks/useReaders';
 import { useReadersForm } from '../../hooks/useReadersForm';
@@ -50,6 +51,20 @@ function ReadersContent() {
     handleSort,
     getSortIcon,
   } = useSorting(readers, sortConfig);
+
+  const {
+    paginatedData: displayedReaders,
+    currentPage,
+    totalPages,
+    itemsPerPage,
+    goToPage,
+    nextPage,
+    prevPage,
+    changeItemsPerPage,
+    startIndex,
+    endIndex,
+    totalItems,
+  } = usePagination(sortedReaders, 10);
 
   // Usuwanie wybranych egzemplarzy
   const handleDeleteSelected = async () => {
@@ -200,7 +215,7 @@ function ReadersContent() {
             </tr>
           </thead>
           <tbody>
-            {sortedReaders.map((reader) => (
+            {displayedReaders.map((reader) => (
               <tr
                 key={reader.czytelnikId}
                 className={isSelected(reader.czytelnikId) ? 'selected' : ''}
@@ -222,6 +237,37 @@ function ReadersContent() {
           </tbody>
         </table>
       </div>
+      {/* Paginacja */}
+      <div className='pagination'>
+        <div className='pagination-info'>
+          Wyświetlanie {startIndex}-{endIndex} z {totalItems} czytelników
+        </div>
+        <div className='pagination-controls'>
+          <button onClick={prevPage} disabled={currentPage === 1}>
+            ← Poprzednia
+          </button>
+          <span className='page-number'>
+            Strona {currentPage} z {totalPages}
+          </span>
+          <button onClick={nextPage} disabled={currentPage === totalPages}>
+            Następna →
+          </button>
+        </div>
+        <div className='pagination-per-page'>
+          <label>Pokaż:</label>
+          <select
+            value={itemsPerPage}
+            onChange={(e) => changeItemsPerPage(Number(e.target.value))}
+          >
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+          </select>
+        </div>
+      </div>
+
       <ReadersModal
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}

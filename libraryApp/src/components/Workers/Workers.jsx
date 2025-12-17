@@ -3,6 +3,7 @@ import useWorkers from '../../hooks/useWorkers';
 import useLibraries from '../../hooks/useLibraries';
 import { useSelection } from '../../hooks/useSelection';
 import useSorting from '../../hooks/useSorting';
+import usePagination from '../../hooks/usePagination';
 import WorkerModal from './WorkerModal/WorkerModal';
 import '../Books/Books.css';
 
@@ -57,6 +58,20 @@ function Workers() {
     handleSort,
     getSortIcon,
   } = useSorting(workers, sortConfig);
+
+  const {
+    paginatedData: displayedWorkers,
+    currentPage,
+    totalPages,
+    itemsPerPage,
+    goToPage,
+    nextPage,
+    prevPage,
+    changeItemsPerPage,
+    startIndex,
+    endIndex,
+    totalItems,
+  } = usePagination(sortedWorkers, 10);
 
   const handleDeleteSelected = async () => {
     if (selectedCount === 0) return;
@@ -178,7 +193,7 @@ function Workers() {
             </tr>
           </thead>
           <tbody>
-            {sortedWorkers.map((worker) => (
+            {displayedWorkers.map((worker) => (
               <tr
                 key={worker.pracownikId}
                 className={isSelected(worker.pracownikId) ? 'selected' : ''}
@@ -205,6 +220,37 @@ function Workers() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Paginacja */}
+      <div className='pagination'>
+        <div className='pagination-info'>
+          Wyświetlanie {startIndex}-{endIndex} z {totalItems} pracowników
+        </div>
+        <div className='pagination-controls'>
+          <button onClick={prevPage} disabled={currentPage === 1}>
+            ← Poprzednia
+          </button>
+          <span className='page-number'>
+            Strona {currentPage} z {totalPages}
+          </span>
+          <button onClick={nextPage} disabled={currentPage === totalPages}>
+            Następna →
+          </button>
+        </div>
+        <div className='pagination-per-page'>
+          <label>Pokaż:</label>
+          <select
+            value={itemsPerPage}
+            onChange={(e) => changeItemsPerPage(Number(e.target.value))}
+          >
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+          </select>
+        </div>
       </div>
 
       <WorkerModal

@@ -4,6 +4,7 @@ import '../Books/Books.css';
 import { useSelection } from '../../hooks/useSelection';
 import { useCopiesForm } from '../../hooks/useCopiesForm';
 import useSorting from '../../hooks/useSorting';
+import usePagination from '../../hooks/usePagination';
 import { useState } from 'react';
 import useLibraries from '../../hooks/useLibraries';
 import CopiesModal from './CopiesModal/CopiesModal';
@@ -72,6 +73,20 @@ function CopiesContent() {
     handleSort,
     getSortIcon,
   } = useSorting(copies, sortConfig);
+
+  const {
+    paginatedData: displayedCopies,
+    currentPage,
+    totalPages,
+    itemsPerPage,
+    goToPage,
+    nextPage,
+    prevPage,
+    changeItemsPerPage,
+    startIndex,
+    endIndex,
+    totalItems,
+  } = usePagination(sortedCopies, 10);
 
   // Usuwanie wybranych egzemplarzy
   const handleDeleteSelected = async () => {
@@ -288,7 +303,7 @@ function CopiesContent() {
             </tr>
           </thead>
           <tbody>
-            {sortedCopies.map((copy) => (
+            {displayedCopies.map((copy) => (
               <tr
                 key={copy.egzemplarzId}
                 className={isSelected(copy.egzemplarzId) ? 'selected' : ''}
@@ -311,6 +326,37 @@ function CopiesContent() {
           </tbody>
         </table>
       </div>
+      {/* Paginacja */}
+      <div className='pagination'>
+        <div className='pagination-info'>
+          Wyświetlanie {startIndex}-{endIndex} z {totalItems} egzemplarzy
+        </div>
+        <div className='pagination-controls'>
+          <button onClick={prevPage} disabled={currentPage === 1}>
+            ← Poprzednia
+          </button>
+          <span className='page-number'>
+            Strona {currentPage} z {totalPages}
+          </span>
+          <button onClick={nextPage} disabled={currentPage === totalPages}>
+            Następna →
+          </button>
+        </div>
+        <div className='pagination-per-page'>
+          <label>Pokaż:</label>
+          <select
+            value={itemsPerPage}
+            onChange={(e) => changeItemsPerPage(Number(e.target.value))}
+          >
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+          </select>
+        </div>
+      </div>
+
       <CopiesModal
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
