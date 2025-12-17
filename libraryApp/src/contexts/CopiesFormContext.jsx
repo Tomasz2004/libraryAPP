@@ -12,7 +12,7 @@ export function CopiesFormProvider({ children }) {
     bibliotekaId: '',
     sygnatura: '',
     barcode: '',
-    status: 'dostepny',
+    status: 'Dostępny',
   });
 
   // Stan formularza biblioteki
@@ -33,7 +33,7 @@ export function CopiesFormProvider({ children }) {
       bibliotekaId: '',
       sygnatura: '',
       barcode: '',
-      status: 'dostepny',
+      status: 'Dostępny',
     });
   };
 
@@ -66,7 +66,6 @@ export function CopiesFormProvider({ children }) {
    */
   const toggleLibraryForm = (show) => {
     setShowLibraryForm(show);
-
   };
 
   /**

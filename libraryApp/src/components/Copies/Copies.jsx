@@ -191,9 +191,9 @@ function CopiesContent() {
                 }
               >
                 <option value=''>Wszystkie</option>
-                <option value='dostepny'>Dostępny</option>
-                <option value='wypozyczony'>Wypożyczony</option>
-                <option value='zablokowany'>Zablokowany</option>
+                <option value='Dostępny'>Dostępny</option>
+                <option value='Wypożyczony'>Wypożyczony</option>
+                <option value='Niedostępny'>Niedostępny</option>
               </select>
             </div>
             <div className='form-group'>

@@ -94,9 +94,9 @@ function CopiesModal({
                 setCopyData({ ...copyData, status: e.target.value })
               }
             >
-              <option value='dostepny'>Dostępny</option>
-              <option value='wypozyczony'>Wypożyczony</option>
-              <option value='zablokowany'>Zablokowany</option>
+              <option value='Dostępny'>Dostępny</option>
+              <option value='Wypożyczony'>Wypożyczony</option>
+              <option value='Niedostępny'>Zablokowany</option>
             </select>
           </div>
 
