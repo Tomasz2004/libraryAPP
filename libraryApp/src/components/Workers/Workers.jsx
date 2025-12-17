@@ -64,7 +64,6 @@ function Workers() {
     currentPage,
     totalPages,
     itemsPerPage,
-    goToPage,
     nextPage,
     prevPage,
     changeItemsPerPage,

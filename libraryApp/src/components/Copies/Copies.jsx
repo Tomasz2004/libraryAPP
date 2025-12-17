@@ -79,7 +79,6 @@ function CopiesContent() {
     currentPage,
     totalPages,
     itemsPerPage,
-    goToPage,
     nextPage,
     prevPage,
     changeItemsPerPage,

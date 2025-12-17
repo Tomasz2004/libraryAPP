@@ -89,7 +89,6 @@ function LoansContent() {
     currentPage,
     totalPages,
     itemsPerPage,
-    goToPage,
     nextPage,
     prevPage,
     changeItemsPerPage,

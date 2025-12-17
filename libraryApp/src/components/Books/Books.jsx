@@ -82,7 +82,6 @@ function BooksContent() {
     currentPage,
     totalPages,
     itemsPerPage,
-    goToPage,
     nextPage,
     prevPage,
     changeItemsPerPage,

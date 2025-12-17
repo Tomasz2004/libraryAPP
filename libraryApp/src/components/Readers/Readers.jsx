@@ -57,7 +57,6 @@ function ReadersContent() {
     currentPage,
     totalPages,
     itemsPerPage,
-    goToPage,
     nextPage,
     prevPage,
     changeItemsPerPage,

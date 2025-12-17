@@ -19,11 +19,6 @@ const usePagination = (data, initialItemsPerPage = 10) => {
     return data.slice(startIndex, endIndex);
   }, [data, currentPage, itemsPerPage]);
 
-  const goToPage = (page) => {
-    const pageNumber = Math.max(1, Math.min(page, totalPages));
-    setCurrentPage(pageNumber);
-  };
-
   const nextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage((prev) => prev + 1);
@@ -46,14 +41,13 @@ const usePagination = (data, initialItemsPerPage = 10) => {
     if (currentPage > totalPages && totalPages > 0) {
       setCurrentPage(totalPages);
     }
-  }, [data, totalPages, currentPage]);
+  }, [totalPages, currentPage]);
 
   return {
     paginatedData,
     currentPage,
     totalPages,
     itemsPerPage,
-    goToPage,
     nextPage,
     prevPage,
     changeItemsPerPage,
