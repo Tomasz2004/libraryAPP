@@ -1,5 +1,6 @@
 import { useBookForm } from '../../../hooks/useBookForm';
 import AuthorForm from '../AuthorForm/AuthorForm';
+import { useEffect } from 'react';
 import './BookModal.css';
 
 /**
@@ -11,18 +12,40 @@ import './BookModal.css';
  * @param {function} onSubmit - funkcja do zapisania książki
  * @param {array} authors - lista autorów
  * @param {function} onAuthorSubmit - funkcja do zapisania autora
+ * @param {object} editingBook - książka do edycji (null jeśli dodawanie)
  */
-function BookModal({ isOpen, onClose, onSubmit, authors, onAuthorSubmit }) {
+function BookModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  authors,
+  onAuthorSubmit,
+  editingBook,
+}) {
   // Pobierz stan i funkcje z contextu
   const { bookData, setBookData, showAuthorForm, toggleAuthorForm } =
     useBookForm();
+
+  // Wypełnij formularz danymi edytowanej książki
+  useEffect(() => {
+    if (isOpen && editingBook) {
+      setBookData({
+        tytul: editingBook.tytul || '',
+        autorId: editingBook.autor?.autorId || '',
+        gatunek: editingBook.gatunek || '',
+        rokWydania: editingBook.rokWydania || '',
+        isbn: editingBook.isbn || '',
+        opis: editingBook.opis || '',
+      });
+    }
+  }, [isOpen, editingBook, setBookData]);
 
   if (!isOpen) return null;
 
   return (
     <div className='modal-overlay' onClick={onClose}>
       <div className='modal' onClick={(e) => e.stopPropagation()}>
-        <h2>Dodaj nową książkę</h2>
+        <h2>{editingBook ? 'Edytuj książkę' : 'Dodaj nową książkę'}</h2>
         <form onSubmit={onSubmit}>
           <div className='form-group'>
             <label>Tytuł *</label>
@@ -116,7 +139,7 @@ function BookModal({ isOpen, onClose, onSubmit, authors, onAuthorSubmit }) {
               Anuluj
             </button>
             <button type='submit' className='btn btn-primary'>
-              Dodaj
+              {editingBook ? 'Zapisz zmiany' : 'Dodaj'}
             </button>
           </div>
         </form>

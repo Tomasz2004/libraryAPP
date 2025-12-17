@@ -1,5 +1,6 @@
 import { useCopiesForm } from '../../../hooks/useCopiesForm';
 import LibraryForm from '../LibraryForm/LibraryForm';
+import { useEffect } from 'react';
 import '../../Books/BookModal/BookModal.css';
 
 function CopiesModal({
@@ -9,17 +10,31 @@ function CopiesModal({
   books,
   libraries,
   onLibrarySubmit,
+  editingCopy,
 }) {
   // Pobierz stan i funkcje z contextu
   const { copyData, setCopyData, showLibraryForm, toggleLibraryForm } =
     useCopiesForm();
+
+  // Wypełnij formularz danymi edytowanego egzemplarza
+  useEffect(() => {
+    if (isOpen && editingCopy) {
+      setCopyData({
+        ksiazkaId: editingCopy.ksiazka.ksiazkaId || '',
+        bibliotekaId: editingCopy.biblioteka.bibliotekaId || '',
+        sygnatura: editingCopy.sygnatura || '',
+        barcode: editingCopy.barcode || '',
+        status: editingCopy.status || '',
+      });
+    }
+  }, [isOpen, editingCopy, setCopyData]);
 
   if (!isOpen) return null;
 
   return (
     <div className='modal-overlay' onClick={onClose}>
       <div className='modal' onClick={(e) => e.stopPropagation()}>
-        <h2>Dodaj nowy egzemplarz</h2>
+        <h2>{editingCopy ? 'Edytuj egzemplarz' : 'Dodaj nowy egzemplarz'}</h2>
         <form onSubmit={onSubmit}>
           <div className='form-group'>
             <label>Książka *</label>
@@ -96,7 +111,7 @@ function CopiesModal({
             >
               <option value='Dostępny'>Dostępny</option>
               <option value='Wypożyczony'>Wypożyczony</option>
-              <option value='Niedostępny'>Zablokowany</option>
+              <option value='Niedostępny'>Niedostępny</option>
             </select>
           </div>
 
@@ -109,7 +124,7 @@ function CopiesModal({
               Anuluj
             </button>
             <button type='submit' className='btn btn-primary'>
-              Dodaj
+              {editingCopy ? 'Zapisz zmiany' : 'Dodaj'}
             </button>
           </div>
         </form>

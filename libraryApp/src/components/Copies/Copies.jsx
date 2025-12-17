@@ -11,8 +11,15 @@ import CopiesModal from './CopiesModal/CopiesModal';
 import { CopiesFormProvider } from '../../contexts/CopiesFormContext';
 
 function CopiesContent() {
-  const { copies, loading, error, addCopy, deleteCopy, fetchCopies } =
-    useCopies();
+  const {
+    copies,
+    loading,
+    error,
+    addCopy,
+    deleteCopy,
+    fetchCopies,
+    updateCopy,
+  } = useCopies();
   const { libraries, fetchLibraries, addLibrary } = useLibraries();
   const { books, fetchBooks } = useBooks();
 
@@ -37,6 +44,7 @@ function CopiesContent() {
 
   // // Stan lokalny - tylko dla UI
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingCopy, setEditingCopy] = useState(null);
 
   // Stan filtrów
   const [filters, setFilters] = useState({
@@ -106,7 +114,7 @@ function CopiesContent() {
     clearSelection();
   };
 
-  // Dodawanie egzemplarza
+  // Dodaj/Edytuj egzemplarz
   const handleAddCopy = async (e) => {
     e.preventDefault();
 
@@ -116,13 +124,23 @@ function CopiesContent() {
       bibliotekaId: parseInt(copyData.bibliotekaId),
     };
 
-    const result = await addCopy(copyDataToSend);
+    let result;
+    if (editingCopy) {
+      result = await updateCopy(editingCopy.egzemplarzId, copyDataToSend);
+    } else {
+      result = await addCopy(copyDataToSend);
+    }
 
     if (result.success) {
       setShowAddModal(false);
+      setEditingCopy(null);
       resetCopyForm();
     } else {
-      alert(`Błąd podczas dodawania egzemplarza: ${result.error}`);
+      alert(
+        `Błąd podczas ${
+          editingCopy ? 'aktualizacji' : 'dodawania'
+        } egzemplarza: ${result.error}`
+      );
     }
   };
 
@@ -142,9 +160,18 @@ function CopiesContent() {
 
   // Otwieranie modalu dodawania książki
   const handleOpenAddModal = () => {
+    setEditingCopy(null);
     setShowAddModal(true);
     resetCopyForm();
     resetLibraryForm();
+    fetchLibraries();
+    fetchBooks();
+  };
+
+  // Otwieranie modalu edycji
+  const handleEditCopy = (copy) => {
+    setEditingCopy(copy);
+    setShowAddModal(true);
     fetchLibraries();
     fetchBooks();
   };
@@ -299,6 +326,7 @@ function CopiesContent() {
                 Data dodania{' '}
                 <span className='sort-arrow'>{getSortIcon('dataDodania')}</span>
               </th>
+              <th>Akcje</th>
             </tr>
           </thead>
           <tbody>
@@ -320,6 +348,15 @@ function CopiesContent() {
                 <td>{copy.barcode}</td>
                 <td>{copy.status}</td>
                 <td>{new Date(copy.dataDodania).toLocaleDateString()}</td>
+                <td>
+                  <button
+                    className='action-btn edit'
+                    onClick={() => handleEditCopy(copy)}
+                    title='Edytuj'
+                  >
+                    ✏️
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -358,11 +395,16 @@ function CopiesContent() {
 
       <CopiesModal
         isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
+        onClose={() => {
+          setShowAddModal(false);
+          setEditingCopy(null);
+          resetCopyForm();
+        }}
         onSubmit={handleAddCopy}
         books={books}
         libraries={libraries}
         onLibrarySubmit={handleAddLibrary}
+        editingCopy={editingCopy}
       />
     </div>
   );

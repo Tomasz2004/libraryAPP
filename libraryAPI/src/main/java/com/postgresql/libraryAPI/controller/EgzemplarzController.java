@@ -37,14 +37,14 @@ public class EgzemplarzController {
     /**
      * GET wszystkich egzemplarzy z opcjonalnymi filtrami
      * Parametry (opcjonalne):
-     * - status: dostepny/wypozyczony/zablokowany
+     * - status: Dostępny/Wypożyczony/Niedostępny
      * - bibliotekaId: ID biblioteki
      * - ksiazkaId: ID książki
      */
     @GetMapping
     public ResponseEntity<List<Egzemplarz>> getAllEgzemplarze(
-            @Parameter(description = "Status egzemplarza", schema = @Schema(allowableValues = { "dostepny",
-                    "wypozyczony", "zablokowany" })) @RequestParam(required = false) String status,
+            @Parameter(description = "Status egzemplarza", schema = @Schema(allowableValues = { "Dostępny",
+                    "Wypożyczony", "Niedostępny" })) @RequestParam(required = false) String status,
             @RequestParam(required = false) Integer bibliotekaId,
             @RequestParam(required = false) Integer ksiazkaId) {
 
@@ -77,9 +77,9 @@ public class EgzemplarzController {
         }
 
         // Walidacja statusu
-        String status = dto.getStatus() != null ? dto.getStatus() : "dostepny";
-        if (!status.equals("dostepny") && !status.equals("wypozyczony") && !status.equals("zablokowany")) {
-            return ResponseEntity.badRequest().body("Status musi być: dostepny, wypozyczony lub zablokowany");
+        String status = dto.getStatus() != null ? dto.getStatus() : "Dostępny";
+        if (!status.equals("Dostępny") && !status.equals("Wypożyczony") && !status.equals("Niedostępny")) {
+            return ResponseEntity.badRequest().body("Status musi być: Dostępny, Wypożyczony lub Niedostępny");
         }
 
         // Utwórz egzemplarz
@@ -122,10 +122,10 @@ public class EgzemplarzController {
                     }
 
                     // Walidacja statusu
-                    if (!dto.getStatus().equals("dostepny") && !dto.getStatus().equals("wypozyczony")
-                            && !dto.getStatus().equals("zablokowany")) {
+                    if (!dto.getStatus().equals("Dostępny") && !dto.getStatus().equals("Wypożyczony")
+                            && !dto.getStatus().equals("Niedostępny")) {
                         return ResponseEntity.badRequest()
-                                .body("Status musi być: dostepny, wypozyczony lub zablokowany");
+                                .body("Status musi być: Dostępny, Wypożyczony lub Niedostępny");
                     }
 
                     // Aktualizuj egzemplarz

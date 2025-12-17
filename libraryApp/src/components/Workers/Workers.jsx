@@ -8,7 +8,8 @@ import WorkerModal from './WorkerModal/WorkerModal';
 import '../Books/Books.css';
 
 function Workers() {
-  const { workers, loading, error, addWorker, deleteWorker } = useWorkers();
+  const { workers, loading, error, addWorker, deleteWorker, updateWorker } =
+    useWorkers();
   const { libraries, fetchLibraries } = useLibraries();
 
   const {
@@ -22,6 +23,7 @@ function Workers() {
   } = useSelection('pracownikId');
 
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingWorker, setEditingWorker] = useState(null);
   const [workerData, setWorkerData] = useState({
     imie: '',
     nazwisko: '',
@@ -107,10 +109,16 @@ function Workers() {
       bibliotekaId: parseInt(workerData.bibliotekaId),
     };
 
-    const result = await addWorker(workerDataToSend);
+    let result;
+    if (editingWorker) {
+      result = await updateWorker(editingWorker.pracownikId, workerDataToSend);
+    } else {
+      result = await addWorker(workerDataToSend);
+    }
 
     if (result.success) {
       setShowAddModal(false);
+      setEditingWorker(null);
       setWorkerData({
         imie: '',
         nazwisko: '',
@@ -119,11 +127,16 @@ function Workers() {
         zatrudnionyOd: '',
       });
     } else {
-      alert(`Błąd podczas dodawania pracownika: ${result.error}`);
+      alert(
+        `Błąd podczas ${
+          editingWorker ? 'aktualizacji' : 'dodawania'
+        } pracownika: ${result.error}`
+      );
     }
   };
 
   const handleOpenAddModal = () => {
+    setEditingWorker(null);
     setShowAddModal(true);
     setWorkerData({
       imie: '',
@@ -132,6 +145,19 @@ function Workers() {
       bibliotekaId: '',
       zatrudnionyOd: '',
     });
+    fetchLibraries();
+  };
+
+  const handleEditWorker = (worker) => {
+    setEditingWorker(worker);
+    setWorkerData({
+      imie: worker.imie,
+      nazwisko: worker.nazwisko,
+      stanowisko: worker.stanowisko,
+      bibliotekaId: worker.biblioteka?.bibliotekaId || '',
+      zatrudnionyOd: worker.zatrudnionyOd || '',
+    });
+    setShowAddModal(true);
     fetchLibraries();
   };
 
@@ -189,6 +215,7 @@ function Workers() {
                   {getSortIcon('zatrudnionyOd')}
                 </span>
               </th>
+              <th>Akcje</th>
             </tr>
           </thead>
           <tbody>
@@ -214,6 +241,15 @@ function Workers() {
                   {worker.zatrudnionyOd
                     ? new Date(worker.zatrudnionyOd).toLocaleDateString()
                     : '-'}
+                </td>
+                <td>
+                  <button
+                    className='action-btn edit'
+                    onClick={() => handleEditWorker(worker)}
+                    title='Edytuj'
+                  >
+                    ✏️
+                  </button>
                 </td>
               </tr>
             ))}
@@ -254,11 +290,22 @@ function Workers() {
 
       <WorkerModal
         isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
+        onClose={() => {
+          setShowAddModal(false);
+          setEditingWorker(null);
+          setWorkerData({
+            imie: '',
+            nazwisko: '',
+            stanowisko: '',
+            bibliotekaId: '',
+            zatrudnionyOd: '',
+          });
+        }}
         onSubmit={handleAddWorker}
         workerData={workerData}
         setWorkerData={setWorkerData}
         libraries={libraries}
+        editingWorker={editingWorker}
       />
     </div>
   );

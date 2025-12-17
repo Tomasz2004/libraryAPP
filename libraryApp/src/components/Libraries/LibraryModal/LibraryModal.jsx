@@ -6,13 +6,16 @@ function LibraryModal({
   onSubmit,
   libraryData,
   setLibraryData,
+  editingLibrary,
 }) {
   if (!isOpen) return null;
 
   return (
     <div className='modal-overlay' onClick={onClose}>
       <div className='modal' onClick={(e) => e.stopPropagation()}>
-        <h2>Dodaj nową bibliotekę</h2>
+        <h2>
+          {editingLibrary ? 'Edytuj bibliotekę' : 'Dodaj nową bibliotekę'}
+        </h2>
         <form onSubmit={onSubmit}>
           <div className='form-group'>
             <label>Nazwa *</label>
@@ -46,7 +49,7 @@ function LibraryModal({
               Anuluj
             </button>
             <button type='submit' className='btn btn-primary'>
-              Dodaj
+              {editingLibrary ? 'Zapisz zmiany' : 'Dodaj'}
             </button>
           </div>
         </form>

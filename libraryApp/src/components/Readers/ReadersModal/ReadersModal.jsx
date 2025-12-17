@@ -1,16 +1,32 @@
 import { useReadersForm } from '../../../hooks/useReadersForm';
+import { useEffect } from 'react';
 import '../../Books/BookModal/BookModal.css';
 
-function ReadersModal({ isOpen, onClose, onSubmit }) {
+function ReadersModal({ isOpen, onClose, onSubmit, editingReader }) {
   // Pobierz stan i funkcje z contextu
   const { readerData, setReaderData } = useReadersForm();
+
+  // Wypełnij formularz danymi edytowanego czytelnika
+  useEffect(() => {
+    if (isOpen && editingReader) {
+      setReaderData({
+        imie: editingReader.imie || '',
+        nazwisko: editingReader.nazwisko || '',
+        email: editingReader.email || '',
+        telefon: editingReader.telefon || '',
+        dataRejestracji: editingReader.dataRejestracji || '',
+      });
+    }
+  }, [isOpen, editingReader, setReaderData]);
 
   if (!isOpen) return null;
 
   return (
     <div className='modal-overlay' onClick={onClose}>
       <div className='modal' onClick={(e) => e.stopPropagation()}>
-        <h2>Dodaj nowego czytelnika</h2>
+        <h2>
+          {editingReader ? 'Edytuj czytelnika' : 'Dodaj nowego czytelnika'}
+        </h2>
         <form onSubmit={onSubmit}>
           <div className='form-group'>
             <label>Imię *</label>
@@ -82,7 +98,7 @@ function ReadersModal({ isOpen, onClose, onSubmit }) {
               Anuluj
             </button>
             <button type='submit' className='btn btn-primary'>
-              Dodaj
+              {editingReader ? 'Zapisz zmiany' : 'Dodaj'}
             </button>
           </div>
         </form>

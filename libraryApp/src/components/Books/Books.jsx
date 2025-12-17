@@ -11,8 +11,15 @@ import './Books.css';
 
 function BooksContent() {
   // Custom hooks - cała logika biznesowa
-  const { books, loading, error, addBook, deleteBooks, fetchBooks } =
-    useBooks();
+  const {
+    books,
+    loading,
+    error,
+    addBook,
+    deleteBooks,
+    fetchBooks,
+    updateBook,
+  } = useBooks();
   const { authors, fetchAuthors, addAuthor } = useAuthors();
 
   // Context - stan formularza
@@ -38,6 +45,7 @@ function BooksContent() {
 
   // Stan lokalny - tylko dla UI
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingBook, setEditingBook] = useState(null);
 
   // Stan filtrów
   const [filters, setFilters] = useState({
@@ -109,7 +117,7 @@ function BooksContent() {
     clearSelection();
   };
 
-  // Dodawanie książki
+  // Dodawanie/Edycja książki
   const handleAddBook = async (e) => {
     e.preventDefault();
 
@@ -119,13 +127,23 @@ function BooksContent() {
       autorId: parseInt(bookData.autorId),
     };
 
-    const result = await addBook(bookDataToSend);
+    let result;
+    if (editingBook) {
+      result = await updateBook(editingBook.ksiazkaId, bookDataToSend);
+    } else {
+      result = await addBook(bookDataToSend);
+    }
 
     if (result.success) {
       setShowAddModal(false);
+      setEditingBook(null);
       resetBookForm();
     } else {
-      alert(`Błąd podczas dodawania książki: ${result.error}`);
+      alert(
+        `Błąd podczas ${editingBook ? 'aktualizacji' : 'dodawania'} książki: ${
+          result.error
+        }`
+      );
     }
   };
 
@@ -146,9 +164,17 @@ function BooksContent() {
 
   // Otwieranie modalu dodawania książki
   const handleOpenAddModal = () => {
+    setEditingBook(null);
     setShowAddModal(true);
     resetBookForm();
     resetAuthorForm();
+    fetchAuthors();
+  };
+
+  // Otwieranie modalu edycji książki
+  const handleEditBook = (book) => {
+    setEditingBook(book);
+    setShowAddModal(true);
     fetchAuthors();
   };
 
@@ -288,6 +314,7 @@ function BooksContent() {
               <th className='sortable' onClick={() => handleSort('isbn')}>
                 ISBN <span className='sort-arrow'>{getSortIcon('isbn')}</span>
               </th>
+              <th>Akcje</th>
             </tr>
           </thead>
           <tbody>
@@ -312,6 +339,15 @@ function BooksContent() {
                 <td>{book.gatunek}</td>
                 <td>{book.rokWydania}</td>
                 <td>{book.isbn}</td>
+                <td>
+                  <button
+                    className='action-btn edit'
+                    onClick={() => handleEditBook(book)}
+                    title='Edytuj'
+                  >
+                    ✏️
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -351,10 +387,15 @@ function BooksContent() {
 
       <BookModal
         isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
+        onClose={() => {
+          setShowAddModal(false);
+          setEditingBook(null);
+          resetBookForm();
+        }}
         onSubmit={handleAddBook}
         authors={authors}
         onAuthorSubmit={handleAddAuthor}
+        editingBook={editingBook}
       />
     </div>
   );

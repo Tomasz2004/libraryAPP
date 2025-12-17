@@ -7,13 +7,16 @@ function WorkerModal({
   workerData,
   setWorkerData,
   libraries,
+  editingWorker,
 }) {
   if (!isOpen) return null;
 
   return (
     <div className='modal-overlay' onClick={onClose}>
       <div className='modal' onClick={(e) => e.stopPropagation()}>
-        <h2>Dodaj nowego pracownika</h2>
+        <h2>
+          {editingWorker ? 'Edytuj pracownika' : 'Dodaj nowego pracownika'}
+        </h2>
         <form onSubmit={onSubmit}>
           <div className='form-group'>
             <label>Imię *</label>
@@ -88,7 +91,7 @@ function WorkerModal({
               Anuluj
             </button>
             <button type='submit' className='btn btn-primary'>
-              Dodaj
+              {editingWorker ? 'Zapisz zmiany' : 'Dodaj'}
             </button>
           </div>
         </form>

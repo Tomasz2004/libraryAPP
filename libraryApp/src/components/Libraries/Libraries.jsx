@@ -14,6 +14,7 @@ function Libraries() {
     fetchLibraries,
     addLibrary,
     deleteLibrary,
+    updateLibrary,
   } = useLibraries();
 
   const {
@@ -27,6 +28,7 @@ function Libraries() {
   } = useSelection('bibliotekaId');
 
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingLibrary, setEditingLibrary] = useState(null);
   const [libraryData, setLibraryData] = useState({ nazwa: '', adres: '' });
 
   // Konfiguracja sortowania
@@ -91,19 +93,36 @@ function Libraries() {
   const handleAddLibrary = async (e) => {
     e.preventDefault();
 
-    const result = await addLibrary(libraryData);
+    let result;
+    if (editingLibrary) {
+      result = await updateLibrary(editingLibrary.bibliotekaId, libraryData);
+    } else {
+      result = await addLibrary(libraryData);
+    }
 
     if (result.success) {
       setShowAddModal(false);
+      setEditingLibrary(null);
       setLibraryData({ nazwa: '', adres: '' });
     } else {
-      alert(`Błąd podczas dodawania biblioteki: ${result.error}`);
+      alert(
+        `Błąd podczas ${
+          editingLibrary ? 'aktualizacji' : 'dodawania'
+        } biblioteki: ${result.error}`
+      );
     }
   };
 
   const handleOpenAddModal = () => {
+    setEditingLibrary(null);
     setShowAddModal(true);
     setLibraryData({ nazwa: '', adres: '' });
+  };
+
+  const handleEditLibrary = (library) => {
+    setEditingLibrary(library);
+    setLibraryData({ nazwa: library.nazwa, adres: library.adres });
+    setShowAddModal(true);
   };
 
   if (loading) return <div className='loading'>Ładowanie bibliotek...</div>;
@@ -142,6 +161,7 @@ function Libraries() {
               <th className='sortable' onClick={() => handleSort('adres')}>
                 Adres <span className='sort-arrow'>{getSortIcon('adres')}</span>
               </th>
+              <th>Akcje</th>
             </tr>
           </thead>
           <tbody>
@@ -159,6 +179,15 @@ function Libraries() {
                 </td>
                 <td>{library.nazwa}</td>
                 <td>{library.adres}</td>
+                <td>
+                  <button
+                    className='action-btn edit'
+                    onClick={() => handleEditLibrary(library)}
+                    title='Edytuj'
+                  >
+                    ✏️
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -198,10 +227,15 @@ function Libraries() {
 
       <LibraryModal
         isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
+        onClose={() => {
+          setShowAddModal(false);
+          setEditingLibrary(null);
+          setLibraryData({ nazwa: '', adres: '' });
+        }}
         onSubmit={handleAddLibrary}
         libraryData={libraryData}
         setLibraryData={setLibraryData}
+        editingLibrary={editingLibrary}
       />
     </div>
   );

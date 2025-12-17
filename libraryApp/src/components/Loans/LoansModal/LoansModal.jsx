@@ -1,16 +1,42 @@
 import { useLoansForm } from '../../../hooks/useLoansForm';
+import { useEffect } from 'react';
 import '../../Books/BookModal/BookModal.css';
 
-function LoansModal({ isOpen, onClose, onSubmit, workers, copies, readers }) {
+function LoansModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  workers,
+  copies,
+  readers,
+  editingLoan,
+}) {
   // Pobierz stan i funkcje z contextu
   const { loanData, setLoanData } = useLoansForm();
+
+  // Wypełnij formularz danymi edytowanego wypożyczenia
+  useEffect(() => {
+    if (isOpen && editingLoan) {
+      setLoanData({
+        egzemplarzId: editingLoan.egzemplarz?.egzemplarzId || '',
+        czytelnikId: editingLoan.czytelnik?.czytelnikId || '',
+        pracownikId: editingLoan.pracownik?.pracownikId || '',
+        dataWypozyczenia: editingLoan.dataWypozyczenia || '',
+        terminZwrotu: editingLoan.terminZwrotu || '',
+        dataZwrotu: editingLoan.dataZwrotu || '',
+        uwagi: editingLoan.uwagi || '',
+      });
+    }
+  }, [isOpen, editingLoan, setLoanData]);
 
   if (!isOpen) return null;
 
   return (
     <div className='modal-overlay' onClick={onClose}>
       <div className='modal' onClick={(e) => e.stopPropagation()}>
-        <h2>Dodaj nową książkę</h2>
+        <h2>
+          {editingLoan ? 'Edytuj wypożyczenie' : 'Dodaj nowe wypożyczenie'}
+        </h2>
         <form onSubmit={onSubmit}>
           <div className='form-group'>
             <label>Egzemplarz *</label>
@@ -114,7 +140,7 @@ function LoansModal({ isOpen, onClose, onSubmit, workers, copies, readers }) {
               Anuluj
             </button>
             <button type='submit' className='btn btn-primary'>
-              Dodaj
+              {editingLoan ? 'Zapisz zmiany' : 'Dodaj'}
             </button>
           </div>
         </form>

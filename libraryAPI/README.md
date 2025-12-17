@@ -68,7 +68,7 @@ curl "http://localhost:8080/api/wypozyczenia/search?dataOd=2025-11-01&dataDo=202
 ### Dostępne egzemplarze w bibliotece
 
 ```bash
-curl "http://localhost:8080/api/egzemplarze/search?status=dostepny&bibliotekaId=1"
+curl "http://localhost:8080/api/egzemplarze/search?status=Dostępny&bibliotekaId=1"
 ```
 
 ### Czytelnicy z aktywnymi wypożyczeniami

@@ -9,8 +9,15 @@ import ReadersModal from './ReadersModal/ReadersModal';
 import { ReadersFormProvider } from '../../contexts/ReadersFormContext';
 
 function ReadersContent() {
-  const { readers, loading, error, addReader, deleteReader, fetchReaders } =
-    useReaders();
+  const {
+    readers,
+    loading,
+    error,
+    addReader,
+    deleteReader,
+    fetchReaders,
+    updateReader,
+  } = useReaders();
 
   const {
     selectedIds: selectedReaders,
@@ -26,6 +33,7 @@ function ReadersContent() {
 
   // // Stan lokalny - tylko dla UI
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingReader, setEditingReader] = useState(null);
 
   // Stan filtrów
   const [filters, setFilters] = useState({
@@ -84,7 +92,7 @@ function ReadersContent() {
     clearSelection();
   };
 
-  // Dodawanie czytelnika
+  // Dodawanie/Edycja czytelnika
   const handleAddReader = async (e) => {
     e.preventDefault();
 
@@ -92,19 +100,37 @@ function ReadersContent() {
       ...readerData,
     };
 
-    const result = await addReader(readerDataToSend);
+    let result;
+    if (editingReader) {
+      result = await updateReader(editingReader.czytelnikId, readerDataToSend);
+    } else {
+      result = await addReader(readerDataToSend);
+    }
+
     if (result.success) {
       setShowAddModal(false);
+      setEditingReader(null);
     } else {
-      alert(`Błąd podczas dodawania czytelnika: ${result.error}`);
+      alert(
+        `Błąd podczas ${
+          editingReader ? 'aktualizacji' : 'dodawania'
+        } czytelnika: ${result.error}`
+      );
     }
   };
 
   // Otwieranie modalu dodawania czytelnika
   const handleOpenAddModal = () => {
+    setEditingReader(null);
     setShowAddModal(true);
     resetReaderForm();
     fetchReaders();
+  };
+
+  // Otwieranie modalu edycji
+  const handleEditReader = (reader) => {
+    setEditingReader(reader);
+    setShowAddModal(true);
   };
 
   // Filtrowanie czytelników
@@ -211,6 +237,7 @@ function ReadersContent() {
                   {getSortIcon('dataRejestracji')}
                 </span>
               </th>
+              <th>Akcje</th>
             </tr>
           </thead>
           <tbody>
@@ -231,6 +258,15 @@ function ReadersContent() {
                 <td>{reader.email}</td>
                 <td>{reader.telefon}</td>
                 <td>{new Date(reader.dataRejestracji).toLocaleDateString()}</td>
+                <td>
+                  <button
+                    className='action-btn edit'
+                    onClick={() => handleEditReader(reader)}
+                    title='Edytuj'
+                  >
+                    ✏️
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -269,8 +305,13 @@ function ReadersContent() {
 
       <ReadersModal
         isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
+        onClose={() => {
+          setShowAddModal(false);
+          setEditingReader(null);
+          resetReaderForm();
+        }}
         onSubmit={handleAddReader}
+        editingReader={editingReader}
       />
     </div>
   );

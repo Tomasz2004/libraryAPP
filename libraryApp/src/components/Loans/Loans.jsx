@@ -13,7 +13,8 @@ import LoansModal from './LoansModal/LoansModal';
 
 function LoansContent() {
   // Custom hooks - cała logika biznesowa
-  const { loans, loading, error, addLoan, deleteLoan, fetchLoans } = useLoans();
+  const { loans, loading, error, addLoan, deleteLoan, fetchLoans, updateLoan } =
+    useLoans();
   const { workers, fetchWorkers } = useWorkers();
   const { copies } = useCopies();
   const { readers } = useReaders();
@@ -34,6 +35,7 @@ function LoansContent() {
 
   // Stan lokalny - tylko dla UI
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingLoan, setEditingLoan] = useState(null);
 
   // Stan filtrów
   const [filters, setFilters] = useState({
@@ -116,7 +118,7 @@ function LoansContent() {
     clearSelection();
   };
 
-  // Dodawanie wypożyczenia
+  // Dodawanie/Edycja wypożyczenia
   const handleAddLoan = async (e) => {
     e.preventDefault();
 
@@ -125,25 +127,43 @@ function LoansContent() {
       egzemplarzId: parseInt(loanData.egzemplarzId),
       czytelnikId: parseInt(loanData.czytelnikId),
       pracownikId: parseInt(loanData.pracownikId),
-      dataWypozyczenia: parseInt(loanData.dataWypozyczenia),
-      terminZwrotu: parseInt(loanData.terminZwrotu),
-      dataZwrotu: parseInt(loanData.dataZwrotu),
+      dataWypozyczenia: loanData.dataWypozyczenia,
+      terminZwrotu: loanData.terminZwrotu,
+      dataZwrotu: loanData.dataZwrotu || null,
     };
 
-    const result = await addLoan(loanDataToSend);
+    let result;
+    if (editingLoan) {
+      result = await updateLoan(editingLoan.wypozyczenieId, loanDataToSend);
+    } else {
+      result = await addLoan(loanDataToSend);
+    }
 
     if (result.success) {
       setShowAddModal(false);
+      setEditingLoan(null);
       resetLoanForm();
     } else {
-      alert(`Błąd podczas dodawania wypożyczenia: ${result.error}`);
+      alert(
+        `Błąd podczas ${
+          editingLoan ? 'aktualizacji' : 'dodawania'
+        } wypożyczenia: ${result.error}`
+      );
     }
   };
 
   // Otwieranie modalu dodawania wypożyczenia
   const handleOpenAddModal = () => {
+    setEditingLoan(null);
     setShowAddModal(true);
     resetLoanForm();
+    fetchWorkers();
+  };
+
+  // Otwieranie modalu edycji
+  const handleEditLoan = (loan) => {
+    setEditingLoan(loan);
+    setShowAddModal(true);
     fetchWorkers();
   };
 
@@ -306,6 +326,7 @@ function LoansContent() {
                 <span className='sort-arrow'>{getSortIcon('dataZwrotu')}</span>
               </th>
               <th>Uwagi</th>
+              <th>Akcje</th>
             </tr>
           </thead>
           <tbody>
@@ -340,6 +361,15 @@ function LoansContent() {
                 <td>{loan.terminZwrotu}</td>
                 <td>{loan.dataZwrotu}</td>
                 <td>{loan.uwagi}</td>
+                <td>
+                  <button
+                    className='action-btn edit'
+                    onClick={() => handleEditLoan(loan)}
+                    title='Edytuj'
+                  >
+                    ✏️
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -379,11 +409,16 @@ function LoansContent() {
 
       <LoansModal
         isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
+        onClose={() => {
+          setShowAddModal(false);
+          setEditingLoan(null);
+          resetLoanForm();
+        }}
         onSubmit={handleAddLoan}
         workers={workers}
         copies={copies}
         readers={readers}
+        editingLoan={editingLoan}
       />
     </div>
   );
