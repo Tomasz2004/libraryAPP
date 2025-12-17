@@ -8,7 +8,9 @@ const copyService = {
     });
 
     const queryString = params.toString();
-    const endpoint = queryString ? `/egzemplarze?${queryString}` : '/egzemplarze';
+    const endpoint = queryString
+      ? `/egzemplarze?${queryString}`
+      : '/egzemplarze';
 
     return apiRequest(endpoint);
   },

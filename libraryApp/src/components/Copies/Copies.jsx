@@ -9,7 +9,8 @@ import CopiesModal from './CopiesModal/CopiesModal';
 import { CopiesFormProvider } from '../../contexts/CopiesFormContext';
 
 function CopiesContent() {
-  const { copies, loading, error, addCopy, deleteCopy, fetchCopies } = useCopies();
+  const { copies, loading, error, addCopy, deleteCopy, fetchCopies } =
+    useCopies();
   const { libraries, fetchLibraries, addLibrary } = useLibraries();
   const { books, fetchBooks } = useBooks();
 
@@ -34,7 +35,7 @@ function CopiesContent() {
 
   // // Stan lokalny - tylko dla UI
   const [showAddModal, setShowAddModal] = useState(false);
-  
+
   // Stan filtrów
   const [filters, setFilters] = useState({
     status: '',
@@ -108,11 +109,13 @@ function CopiesContent() {
   const handleFilter = (e) => {
     e.preventDefault();
     const activeFilters = {};
-    
+
     if (filters.status) activeFilters.status = filters.status;
-    if (filters.bibliotekaId) activeFilters.bibliotekaId = parseInt(filters.bibliotekaId);
-    if (filters.ksiazkaId) activeFilters.ksiazkaId = parseInt(filters.ksiazkaId);
-    
+    if (filters.bibliotekaId)
+      activeFilters.bibliotekaId = parseInt(filters.bibliotekaId);
+    if (filters.ksiazkaId)
+      activeFilters.ksiazkaId = parseInt(filters.ksiazkaId);
+
     fetchCopies(activeFilters);
   };
 
@@ -137,9 +140,11 @@ function CopiesContent() {
           <button className='btn btn-primary' onClick={handleOpenAddModal}>
             + Dodaj egzemplarz
           </button>
-          <button className='btn btn-danger' onClick={handleDeleteSelected}>
-            Usuń wybrane ({selectedCount})
-          </button>
+          {selectedCount > 0 && (
+            <button className='btn btn-danger' onClick={handleDeleteSelected}>
+              Usuń wybrane ({selectedCount})
+            </button>
+          )}
         </div>
       </div>
 
@@ -171,7 +176,10 @@ function CopiesContent() {
               >
                 <option value=''>Wszystkie biblioteki</option>
                 {libraries.map((library) => (
-                  <option key={library.bibliotekaId} value={library.bibliotekaId}>
+                  <option
+                    key={library.bibliotekaId}
+                    value={library.bibliotekaId}
+                  >
                     {library.nazwa}
                   </option>
                 ))}

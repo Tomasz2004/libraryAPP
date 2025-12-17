@@ -24,7 +24,7 @@ function ReadersContent() {
 
   // // Stan lokalny - tylko dla UI
   const [showAddModal, setShowAddModal] = useState(false);
-  
+
   // Stan filtrów
   const [filters, setFilters] = useState({
     loanStatus: '',
@@ -76,9 +76,9 @@ function ReadersContent() {
   const handleFilter = (e) => {
     e.preventDefault();
     const activeFilters = {};
-    
+
     if (filters.loanStatus) activeFilters.loanStatus = filters.loanStatus;
-    
+
     fetchReaders(activeFilters);
   };
 
@@ -101,9 +101,11 @@ function ReadersContent() {
           <button className='btn btn-primary' onClick={handleOpenAddModal}>
             + Dodaj czytelnika
           </button>
-          <button className='btn btn-danger' onClick={handleDeleteSelected}>
-            Usuń wybrane ({selectedCount})
-          </button>
+          {selectedCount > 0 && (
+            <button className='btn btn-danger' onClick={handleDeleteSelected}>
+              Usuń wybrane ({selectedCount})
+            </button>
+          )}
         </div>
       </div>
 
