@@ -5,7 +5,7 @@ import { useSelection } from '../../hooks/useSelection';
 import { useCopiesForm } from '../../hooks/useCopiesForm';
 import useSorting from '../../hooks/useSorting';
 import usePagination from '../../hooks/usePagination';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import useLibraries from '../../hooks/useLibraries';
 import CopiesModal from './CopiesModal/CopiesModal';
 import { CopiesFormProvider } from '../../contexts/CopiesFormContext';
@@ -22,6 +22,12 @@ function CopiesContent() {
   } = useCopies();
   const { libraries, fetchLibraries, addLibrary } = useLibraries();
   const { books, fetchBooks } = useBooks();
+
+  // Załaduj biblioteki i książki na starcie dla filtrów
+  useEffect(() => {
+    fetchLibraries();
+    fetchBooks();
+  }, [fetchLibraries, fetchBooks]);
 
   const {
     selectedIds: selectedCopies,
