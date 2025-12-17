@@ -130,6 +130,15 @@ function LoansModal({
               }
             ></input>
           </div>
+          <div className='form-group'>
+            <label>Uwagi</label>
+            <input
+              value={loanData.uwagi}
+              onChange={(e) => {
+                setLoanData({ ...loanData, uwagi: e.target.value });
+              }}
+            ></input>
+          </div>
 
           <div className='modal-actions'>
             <button
